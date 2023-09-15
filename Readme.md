@@ -31,7 +31,7 @@ This tool looks for Factory files in `lib/templates`. Within the templates folde
 
 #### Factory Templates
 
-Please review the existing factories in this project for examples. All Factory Templates have two required and on optional class methods:
+Please review the existing factories in this project for examples. All Factory Templates have two required and one optional class methods:
 
 - `policy_template` - Ruby ERB template of the policy to be applied.
 - `policy_branch` - [OPTIONAL] String or ERB template of policy branch for this factory's generated policy. By default, the policy branch will be `<%= branch %>`.
