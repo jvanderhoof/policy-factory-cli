@@ -1,0 +1,97 @@
+# frozen_string_literal: true
+
+module Factories
+  module Templates
+    module Connections
+      module V1
+        class Database < Factories::Base
+          class << self
+            def policy_template
+              <<~TEMPLATE
+                - !policy
+                  id: <%= id %>
+                  annotations:
+                    factory: connections/v1/database
+                  <% annotations.each do |key, value| -%>
+                    <%= key %>: <%= value %>
+                  <% end -%>
+
+                  body:
+                  - &variables
+                    - !variable url
+                    - !variable port
+                    - !variable username
+                    - !variable password
+
+                  - !group consumers
+                  - !group administrators
+
+                  # consumers can read and execute
+                  - !permit
+                    resource: *variables
+                    privileges: [ read, execute ]
+                    role: !group consumers
+
+                  # administrators can update (and read and execute, via role grant)
+                  - !permit
+                    resource: *variables
+                    privileges: [ update ]
+                    role: !group administrators
+
+                  # administrators has role consumers
+                  - !grant
+                    member: !group administrators
+                    role: !group consumers
+              TEMPLATE
+            end
+
+            def schema
+              {
+                "title": "Database Connection Template",
+                "description": "All information for connecting to a database",
+                "type": "object",
+                "properties": {
+                  "id": {
+                    "description": "Database Connection Identifier",
+                    "type": "string"
+                  },
+                  "branch": {
+                    "description": "Policy branch to load this connection into",
+                    "type": "string"
+                  },
+                  "annotations": {
+                    "description": "Additional annotations",
+                    "type": "object"
+                  },
+                  "variables": {
+                    "type": "object",
+                    "properties": {
+                      "url": {
+                        "description": "Database URL",
+                        "type": "string"
+                      },
+                      "port": {
+                        "description": "Database Port",
+                        "type": "string"
+                      },
+                      "username": {
+                        "description": "Database Username",
+                        "type": "string"
+                      },
+                      "password": {
+                        "description": "Database Password",
+                        "type": "string"
+                      },
+                    },
+                    "required": %w[url port username password]
+                  }
+                },
+                "required": %w[id branch variables]
+              }
+            end
+          end
+        end
+      end
+    end
+  end
+end

@@ -1,0 +1,55 @@
+#!/bin/bash -e
+
+image=policy-factory-builder:v0.0.1
+password=''
+
+run() {
+  # Only build if the image isn't present locally
+  if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
+    docker build -t $image .
+  fi
+  docker run \
+    --network host \
+    --volume "$PWD:/opt/app/" \
+    --env PASSWORD=$password \
+    --env URL=$CONJUR_URL \
+    --env USERNAME=$CONJUR_USERNAME \
+    --env ACCOUNT=$ACCOUNT \
+    --rm \
+    --tty \
+    --interactive \
+    $image rake policy_factory:load
+}
+
+verify_required_variables_present() {
+  if [[ -z "$CONJUR_USERNAME" ]]; then
+    echo "The environment variable 'CONJUR_USERNAME' must be set to the Conjur user's username." 1>&2
+    exit 1
+  fi
+
+  if [[ -z "$ACCOUNT" ]]; then
+    echo "The environment variable 'ACCOUNT' must be set to the Conjur account." 1>&2
+    exit 1
+  fi
+  if [[ -z "$CONJUR_URL" ]]; then
+    echo "The environment variable 'CONJUR_URL' must be set to the Conjur URL." 1>&2
+    exit 1
+  fi
+}
+
+main() {
+  # Verify we have the environment variables we need
+  verify_required_variables_present
+
+  # Request password from user
+  echo -n "Conjur '$CONJUR_USERNAME' Password: "
+  read -sr password
+  echo
+
+  # Call the command
+  run
+
+  echo 'Factories have been loaded successfully'
+}
+
+main
