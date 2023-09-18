@@ -12,7 +12,8 @@ run() {
     --network host \
     --volume "$PWD:/opt/app/" \
     --env PASSWORD=$password \
-    --env URL=$CONJUR_URL \
+    --env API_KEY=$API_KEY \
+    --env CONJUR_URL=$CONJUR_URL \
     --env USERNAME=$CONJUR_USERNAME \
     --env ACCOUNT=$ACCOUNT \
     --rm \
@@ -41,10 +42,12 @@ main() {
   # Verify we have the environment variables we need
   verify_required_variables_present
 
-  # Request password from user
-  echo -n "Conjur '$CONJUR_USERNAME' Password: "
-  read -sr password
-  echo
+  # Request password from user if API key is not present
+  if [[ -z "$API_KEY" ]]; then
+    echo -n "Conjur '$CONJUR_USERNAME' Password: "
+    read -sr password
+    echo
+  fi
 
   # Call the command
   run
