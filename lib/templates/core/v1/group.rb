@@ -23,32 +23,32 @@ module Factories
 
             def schema
               {
-                "title": "Group Template",
-                "description": "Creates a Conjur Group",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "description": "Group Identifier",
-                    "type": "string"
+                'title': 'Group Template',
+                'description': 'Creates a Conjur Group',
+                'type': 'object',
+                'properties': {
+                  'id': {
+                    'description': 'Group Identifier',
+                    'type': 'string'
                   },
-                  "branch": {
-                    "description": "Policy branch to load this group into",
-                    "type": "string"
+                  'branch': {
+                    'description': 'Policy branch to load this group into',
+                    'type': 'string'
                   },
-                  "owner_role": {
-                    "description": "The Conjur Role that will own this group",
-                    "type": "string"
+                  'owner_role': {
+                    'description': 'The Conjur Role that will own this group',
+                    'type': 'string'
                   },
-                  "owner_type": {
-                    "description": "The resource type of the owner of this group",
-                    "type": "string"
+                  'owner_type': {
+                    'description': 'The resource type of the owner of this group',
+                    'type': 'string'
                   },
-                  "annotations": {
-                    "description": "Additional annotations",
-                    "type": "object"
+                  'annotations': {
+                    'description': 'Additional annotations',
+                    'type': 'object'
                   }
                 },
-                "required": %w[id branch]
+                'required': %w[id branch]
               }
             end
           end

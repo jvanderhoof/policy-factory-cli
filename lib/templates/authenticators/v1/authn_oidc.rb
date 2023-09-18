@@ -58,46 +58,46 @@ module Factories
 
             def schema
               {
-                "title": "Authn-OIDC Template",
-                "description": "Create a new Authn-OIDC Authenticator",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "description": "Service ID of the Authenticator",
-                    "type": "string"
+                'title': 'Authn-OIDC Template',
+                'description': 'Create a new Authn-OIDC Authenticator',
+                'type': 'object',
+                'properties': {
+                  'id': {
+                    'description': 'Service ID of the Authenticator',
+                    'type': 'string'
                   },
-                  "annotations": {
-                    "description": "Additional annotations",
-                    "type": "object"
+                  'annotations': {
+                    'description': 'Additional annotations',
+                    'type': 'object'
                   },
-                  "variables": {
-                    "type": "object",
-                    "properties": {
-                      "provider-uri": {
-                        "description": "OIDC Provider endpoint",
-                        "type": "string"
+                  'variables': {
+                    'type': 'object',
+                    'properties': {
+                      'provider-uri': {
+                        'description': 'OIDC Provider endpoint',
+                        'type': 'string'
                       },
-                      "client-id": {
-                        "description": "OIDC Client ID",
-                        "type": "string"
+                      'client-id': {
+                        'description': 'OIDC Client ID',
+                        'type': 'string'
                       },
-                      "client-secret": {
-                        "description": "OIDC Client Secret",
-                        "type": "string"
+                      'client-secret': {
+                        'description': 'OIDC Client Secret',
+                        'type': 'string'
                       },
-                      "redirect-uri": {
-                        "description": "Target URL to redirect to after successful authentication",
-                        "type": "string"
+                      'redirect-uri': {
+                        'description': 'Target URL to redirect to after successful authentication',
+                        'type': 'string'
                       },
-                      "claim-mapping": {
-                        "description": "OIDC JWT claim mapping. This value must match to a Conjur Host ID.",
-                        "type": "string"
+                      'claim-mapping': {
+                        'description': 'OIDC JWT claim mapping. This value must match to a Conjur Host ID.',
+                        'type': 'string'
                       }
                     },
-                    "required": %w[provider-uri client-id client-secret claim-mapping]
+                    'required': %w[provider-uri client-id client-secret claim-mapping]
                   }
                 },
-                "required": %w[id variables]
+                'required': %w[id variables]
               }
             end
           end

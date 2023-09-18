@@ -26,36 +26,36 @@ module Factories
 
             def schema
               {
-                "title": "User Template",
-                "description": "Creates a Conjur User",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "description": "User ID",
-                    "type": "string"
+                'title': 'User Template',
+                'description': 'Creates a Conjur User',
+                'type': 'object',
+                'properties': {
+                  'id': {
+                    'description': 'User ID',
+                    'type': 'string'
                   },
-                  "branch": {
-                    "description": "Policy branch to load this user into",
-                    "type": "string"
+                  'branch': {
+                    'description': 'Policy branch to load this user into',
+                    'type': 'string'
                   },
-                  "owner_role": {
-                    "description": "The Conjur Role that will own this user",
-                    "type": "string"
+                  'owner_role': {
+                    'description': 'The Conjur Role that will own this user',
+                    'type': 'string'
                   },
-                  "owner_type": {
-                    "description": "The resource type of the owner of this user",
-                    "type": "string"
+                  'owner_type': {
+                    'description': 'The resource type of the owner of this user',
+                    'type': 'string'
                   },
-                  "ip_range": {
-                    "description": "Limits the network range the user is allowed to authenticate from",
-                    "type": "string"
+                  'ip_range': {
+                    'description': 'Limits the network range the user is allowed to authenticate from',
+                    'type': 'string'
                   },
-                  "annotations": {
-                    "description": "Additional annotations",
-                    "type": "object"
+                  'annotations': {
+                    'description': 'Additional annotations',
+                    'type': 'object'
                   }
                 },
-                "required": %w[id branch]
+                'required': %w[id branch]
               }
             end
           end

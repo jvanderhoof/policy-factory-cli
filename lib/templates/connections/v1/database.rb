@@ -47,46 +47,46 @@ module Factories
 
             def schema
               {
-                "title": "Database Connection Template",
-                "description": "All information for connecting to a database",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "description": "Database Connection Identifier",
-                    "type": "string"
+                'title': 'Database Connection Template',
+                'description': 'All information for connecting to a database',
+                'type': 'object',
+                'properties': {
+                  'id': {
+                    'description': 'Database Connection Identifier',
+                    'type': 'string'
                   },
-                  "branch": {
-                    "description": "Policy branch to load this connection into",
-                    "type": "string"
+                  'branch': {
+                    'description': 'Policy branch to load this connection into',
+                    'type': 'string'
                   },
-                  "annotations": {
-                    "description": "Additional annotations",
-                    "type": "object"
+                  'annotations': {
+                    'description': 'Additional annotations',
+                    'type': 'object'
                   },
-                  "variables": {
-                    "type": "object",
-                    "properties": {
-                      "url": {
-                        "description": "Database URL",
-                        "type": "string"
+                  'variables': {
+                    'type': 'object',
+                    'properties': {
+                      'url': {
+                        'description': 'Database URL',
+                        'type': 'string'
                       },
-                      "port": {
-                        "description": "Database Port",
-                        "type": "string"
+                      'port': {
+                        'description': 'Database Port',
+                        'type': 'string'
                       },
-                      "username": {
-                        "description": "Database Username",
-                        "type": "string"
+                      'username': {
+                        'description': 'Database Username',
+                        'type': 'string'
                       },
-                      "password": {
-                        "description": "Database Password",
-                        "type": "string"
+                      'password': {
+                        'description': 'Database Password',
+                        'type': 'string'
                       },
                     },
-                    "required": %w[url port username password]
+                    'required': %w[url port username password]
                   }
                 },
-                "required": %w[id branch variables]
+                'required': %w[id branch variables]
               }
             end
           end

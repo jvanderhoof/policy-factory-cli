@@ -23,33 +23,33 @@ module Factories
 
             def schema
               {
-                "$schema": "http://json-schema.org/draft-06/schema#",
-                "title": "User Template",
-                "description": "Creates a Conjur Policy",
-                "type": "object",
-                "properties": {
-                  "id": {
-                    "description": "Policy ID",
-                    "type": "string"
+                '$schema': 'http://json-schema.org/draft-06/schema#',
+                'title': 'User Template',
+                'description': 'Creates a Conjur Policy',
+                'type': 'object',
+                'properties': {
+                  'id': {
+                    'description': 'Policy ID',
+                    'type': 'string'
                   },
-                  "branch": {
-                    "description": "Policy branch to load this policy into",
-                    "type": "string"
+                  'branch': {
+                    'description': 'Policy branch to load this policy into',
+                    'type': 'string'
                   },
-                  "owner_role": {
-                    "description": "The Conjur Role that will own this policy",
-                    "type": "string"
+                  'owner_role': {
+                    'description': 'The Conjur Role that will own this policy',
+                    'type': 'string'
                   },
-                  "owner_type": {
-                    "description": "The resource type of the owner of this policy",
-                    "type": "string"
+                  'owner_type': {
+                    'description': 'The resource type of the owner of this policy',
+                    'type': 'string'
                   },
-                  "annotations": {
-                    "description": "Additional annotations",
-                    "type": "object"
+                  'annotations': {
+                    'description': 'Additional annotations',
+                    'type': 'object'
                   }
                 },
-                "required": %w[id branch]
+                'required': %w[id branch]
               }
             end
           end
