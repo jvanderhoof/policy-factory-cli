@@ -16,6 +16,7 @@ run() {
     --env CONJUR_URL=$CONJUR_URL \
     --env USERNAME=$CONJUR_USERNAME \
     --env ACCOUNT=$ACCOUNT \
+    --env TEMPLATE_FOLDER=$TEMPLATE_FOLDER \
     --rm \
     --tty \
     --interactive \
@@ -52,7 +53,14 @@ main() {
   # Call the command
   run
 
-  echo 'Factories have been loaded successfully'
+  # echo
+  # echo 'Factories have been loaded successfully'
 }
+
+TEMPLATE_FOLDER="templates"
+
+if [[ "$1" == "default" ]]; then
+  TEMPLATE_FOLDER="default"
+fi
 
 main

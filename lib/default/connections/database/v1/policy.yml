@@ -1,0 +1,19 @@
+- !group consumers
+- !group administrators
+
+# consumers can read and execute
+- !permit
+  resource: *variables
+  privileges: [ read, execute ]
+  role: !group consumers
+
+# administrators can update (and read and execute, via role grant)
+- !permit
+  resource: *variables
+  privileges: [ update ]
+  role: !group administrators
+
+# administrators has role consumers
+- !grant
+  member: !group administrators
+  role: !group consumers

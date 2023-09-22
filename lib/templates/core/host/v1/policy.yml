@@ -1,0 +1,13 @@
+- !host
+  id: <%= id %>
+<% if defined?(owner_role) && defined?(owner_type) -%>
+  owner: !<%= owner_type %> <%= owner_role %>
+<% end -%>
+<% if defined?(ip_range) -%>
+  restricted_to: <%= ip_range %>
+<% end -%>
+  annotations:
+    factory: core/v1/host
+<% annotations.each do |key, value| -%>
+    <%= key %>: <%= value %>
+<% end -%>

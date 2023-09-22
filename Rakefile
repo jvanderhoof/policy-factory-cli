@@ -4,18 +4,16 @@ require 'bundler'
 
 Bundler.require
 
-require './lib/base'
-
-template_files = Dir["#{Dir.pwd}/lib/templates/**/*.rb"]
-template_files.each { |f| require f }
+require 'fileutils'
+require './lib/compiler/generate_factory'
 
 def available_templates(files)
   {}.tap do |templates|
     files.each do |file|
-      classification, version = File.dirname(file).split('/')[-2..]
+      classification, name, version = File.dirname(file).split('/')[-3..-1]
       templates[classification]
       templates[classification] ||= []
-      templates[classification] << "#{version}/#{File.basename(file, '.rb')}"
+      templates[classification] << "#{version}/#{name.underscore}"
     end
   end
 end
@@ -39,12 +37,16 @@ def base_template
   TEMPLATE
 end
 
+def render(template:, **args)
+  ERB.new(template, trim_mode: '<>').result_with_hash(args)
+end
+
 def generate_base_policy(templates)
-  ERB.new(base_template, trim_mode: '<>').result_with_hash(templates: templates)
+  render(template: base_template, templates: templates)
 end
 
 def api_key
-  return ENV['API_KEY'] if ENV.key?('API_KEY')
+  return ENV['API_KEY'] if ENV['API_KEY'].present?
 
   return Conjur::API.login(username, ENV['PASSWORD']).to_s if ENV.key?('PASSWORD')
 
@@ -70,18 +72,80 @@ def account
   ENV.fetch('ACCOUNT', 'cucumber')
 end
 
+def create_factory(classification:, version:, name:)
+  version = "v#{version.gsub(/\D/, '')}"
+  target_directory = "lib/templates/#{classification.underscore}/#{name.underscore}/#{version}"
+  FileUtils.mkdir_p(target_directory)
+
+  if File.exist?("#{target_directory}/policy.yml")
+    puts "File already exists: '#{target_directory}/policy.yml'"
+  else
+    File.open("#{target_directory}/policy.yml", 'w') do |file|
+      file.write("# Place relevant Conjur Policy here.\n")
+    end
+  end
+
+  if File.exist?("#{target_directory}/config.json")
+    puts "File already exists: '#{target_directory}/policy.yml'"
+  else
+    File.open("#{target_directory}/config.json", 'w') do |file|
+      file.write(
+        JSON.pretty_generate(
+          {
+            title: '',
+            description: '',
+            variables: {
+              'variable-1': { required: true, description: '' },
+              'variable-2': { description: '' }
+            }
+          }
+        )
+      )
+    end
+  end
+
+  puts "Factory stubs generated in: '#{target_directory}'"
+end
+
 namespace :policy_factory do
+  task :create, [:classification, :version, :name] do |_, args|
+    create_factory(
+      classification: args[:classification],
+      version: args[:version],
+      name: args[:name]
+    )
+  end
+
   task :load do
-    templates = available_templates(template_files)
+    template_folder = ENV.fetch('TEMPLATE_FOLDER', 'templates')
+
+    templates = available_templates(Dir["#{Dir.pwd}/lib/#{template_folder}/**/*.json"])
+
+    if templates.empty?
+      puts "It looks like there are no templates in 'lib/#{template_folder}'"
+      exit
+    end
+    puts "Loading templates from 'lib/#{template_folder}'\n\n"
+
     client.load_policy('root', generate_base_policy(templates))
 
     templates.each do |classification, factories|
       factories.each do |factory_version|
         version, factory = factory_version.split('/')
+
+        factory_file_path = "lib/#{template_folder}/#{classification}/#{factory}/#{version}"
+        puts "  loading template from: '#{factory_file_path}'"
         client.resource(
           "#{account}:variable:conjur/factories/#{classification}/#{version}/#{factory}"
         ).add_value(
-          "Factories::Templates::#{classification.capitalize}::#{version.capitalize}::#{factory.camelize}".constantize.send(:data)
+          Compiler::GenerateFactory.new(
+            name: factory,
+            version: version,
+            classification: classification
+          ).generate(
+            policy_template: File.read("#{factory_file_path}/policy.yml"),
+            configuration: JSON.parse(File.read("#{factory_file_path}/config.json"))
+          )
         )
       end
     end

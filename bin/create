@@ -1,0 +1,56 @@
+#!/bin/bash -e
+
+image=policy-factory-builder:v0.0.1
+
+function _print_help {
+  cat << EOF
+
+A tool that generates Policy Factory starting templates.
+
+Synopsis: bin/create [command options] <factory-name>
+
+Usage: bin/create [options] <factory-name>:
+
+    -c, --classification <name> Classification for a factory.  By default, the classification will be 'default'
+
+    -h, --help                  Shows this help message.
+
+    -v, --version <version>     Version for a factory. By default, the version will be 'v1'.
+
+EOF
+  exit
+}
+
+run() {
+  # Only build if the image isn't present locally
+  if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
+    docker build -t $image .
+  fi
+  docker run \
+    --network host \
+    --volume "$PWD:/opt/app/" \
+    --rm \
+    --tty \
+    --interactive \
+    $image rake policy_factory:create[$classification,$version,$name]
+}
+
+version='v1'
+classification='default'
+
+while true ; do
+  case "$1" in
+    -h | --help ) _print_help ;;
+    -v | --version ) shift; version="$1" ; shift ;;
+    -c | --classification ) shift; classification="$1" ; shift ;;
+    * ) name="$1" ; break ;;
+  esac
+done
+
+
+if [[ -z "$name" ]]; then
+  echo "The script did no receive a factory name as the final arguement: bin/create [args] <factory-name>" 1>&2
+  exit 1
+fi
+
+run "$version" "$classification" "$name"

@@ -1,0 +1,8 @@
+- !webservice
+
+- !group authenticatable
+
+- !permit
+  role: !group authenticatable
+  privilege: [ read, authenticate ]
+  resource: !webservice

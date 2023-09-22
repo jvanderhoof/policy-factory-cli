@@ -1,0 +1,25 @@
+- !webservice
+
+- !group authenticatable
+  annotations:
+    description: Group with permission to authenticate using this authenticator
+
+- !permit
+  role: !group authenticatable
+  privilege: [ read, authenticate ]
+  resource: !webservice
+
+- !webservice
+  id: status
+  annotations:
+    description: Web service for checking authenticator status
+
+- !group
+  id: operators
+  annotations:
+    description: Group with permission to check the authenticator status
+
+- !permit
+  role: !group operators
+  privilege: [ read ]
+  resource: !webservice status

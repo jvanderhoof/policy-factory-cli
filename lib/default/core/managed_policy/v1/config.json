@@ -1,0 +1,18 @@
+{
+  "title": "Managed Policy Template",
+  "description": "Policy with an owner group",
+  "wrap_with_policy": false,
+  "policy_template_variables": {
+    "name": {
+      "required": true,
+      "description": "Policy name (used to create the policy ID and the <name>-admins owner group)"
+    },
+    "branch": {
+      "required": true,
+      "description": "Policy branch to load this policy into"
+    },
+    "annotations": {
+      "description": "Additional annotations"
+    }
+  }
+}

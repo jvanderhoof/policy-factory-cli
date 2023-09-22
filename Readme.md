@@ -7,22 +7,38 @@ For a customer engagement, it's strongly suggested you clone this repository and
 a customer specific branch. This will allow you to generate factories to meet customer
 specific needs.
 
-## Operations
+## Resources
 
-There are four key bits of information required for loading Factories:
+- How To
+  - [Create a Simple Factory](docs/how-to-simple-factory.md)
+- Reference
+  - [API](docs/reference-api.md)
+  - [CLI](docs/reference-cli.md)
+  - [Configuration](docs/reference-configuration.md)
+  - [Policy](docs/reference-policy.md)
+  -
 
-| Value | Environment Variable | Comments |
-|-|-|-|
-| URL | CONJUR_URL | Full URL of the Conjur Leader |
-| Account| ACCOUNT | The account the factories should be loaded into |
-| Username | CONJUR_USERNAME | Username to use when logging into Conjur |
-| API Key | API_KEY | [Optional] API key to use instead of a password |
-| Password | | Password for the user. This is collected via the CLI |
+## Load Default Templates
 
-As an example, to load Factories into Conjur Intro, run:
+This project includes a number of pre-constructed factories. Default templates include the following:
+
+- Authenticators
+    - AuthnJwt (using JWKS)
+    - AuthnJwt (using public keys)
+    - AuthnOIDC
+- Connections
+    - Database
+- Core
+  - Grant
+  - Group
+  - Managed Policy
+  - Policy
+  - User
+
+To load the default set of Factories into Conjur (running via Conjur Intro), run:
 
 ```sh
-CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load
+CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load default
 ```
 
 To load Factories into a local Conjur development environment:
@@ -31,27 +47,143 @@ To load Factories into a local Conjur development environment:
 API_KEY=<api-key> CONJUR_URL=<http://localhost:3000> ACCOUNT=cucumber CONJUR_USERNAME=admin  bin/load
 ```
 
-### Behind the Scene
+## Quickstart
 
-#### Organization
+*This quickstart assumes you've cloned this repository locally, and are calling commands from inside this project directory.*
 
-This tool looks for Factory files in `lib/templates`. Within the templates folder, folder names matter. They allow factories to be organized and versioned. They have the following convention:
+#### Factory with Variables
 
+As an example, let's create a Policy Factory that simplifies the process of storing API credentials for various services that offer APIs. Before starting, let's define what we want:
+
+- include two variables, `url`, and `api-key`
+- create a group with permission to see and retrieve these variables
+- create an admin group to administer these credentials
+
+### Generate Factory Stubs
+
+First, let's generate the neccisary factory stubs:
+
+```sh
+bin/create api_credentials
 ```
-<classification>/<version>/<factory>
+
+This command will create two files (`config.json` and `policy.yml` in `lib/templates/default/api_credentials/v1`).
+
+### Update Factory Configuration
+
+Open the API Policy Factory config file: `lib/templates/default/api_credentials/v1/config.json`.  It will look like the following:
+
+```json
+{
+  "title": "",
+  "description": "",
+  "variables": {
+    "variable-1": {
+      "required": true,
+      "description": ""
+    },
+    "variable-2": {
+      "description": ""
+    }
+  }
+}
 ```
 
-**Classifications** - provides a mechanism for organizing to factories. Create a classification by creating a new folder in the `lib/templates` directory. The classification must be part of the the Factory file as a `module`.
+Update it to the following:
 
-**Version** - enables factories to be versioned. By default, all factories must have
-at least one version (`v1`).  Versions must follow the convention `v<integer>` (ex. `v1`, `v2`...`v12`).  The version must be part of the the Factory file as a `module`.
+```json
+{
+  "title": "API Credentials Template",
+  "description": "Data related to external APIs",
+  "variables": {
+    "url": {
+      "required": true,
+      "description": "API URL"
+    },
+    "api-key": {
+      "required": true,
+      "description": "API authentication key"
+    }
+  }
+}
+```
 
-**Factory** - name of the factory you're creating. The file name must be unique and the name should correspond with the Factory Class name. All factories must inherit from `Factories::Base` to ensure the factory loads successfully.
+Save and close the `config.json` file.
 
-#### Factory Templates
+### Update Factory Policy
 
-Please review the existing factories in this project for examples. All Factory Templates have two required and one optional class methods:
+Next, open the Policy Factory policy file: `lib/templates/default/api_credentials/v1/policy.yml` and update it to the following:
 
-- `policy_template` - Ruby ERB template of the policy to be applied.
-- `policy_branch` - [OPTIONAL] String or ERB template of policy branch for this factory's generated policy. By default, the policy branch will be `<%= branch %>`.
-- `schema` - JSON Schema to define this factory's inputs and variables.
+```yml
+- !group consumers
+- !group administrators
+
+# consumers can read and execute
+- !permit
+  resource: *variables
+  privileges: [ read, execute ]
+  role: !group consumers
+
+# administrators can update (and read and execute, via role grant)
+- !permit
+  resource: *variables
+  privileges: [ update ]
+  role: !group administrators
+
+# administrators has role consumers
+- !grant
+  member: !group administrators
+  role: !group consumers
+```
+
+Save the changes to `policy.yml`.
+
+*Note: in the above policy `*variables` will refer to the variables defined in `config.json`.*
+
+### Load the Factory
+
+*In order to load Policy Factories, your role needs permission to create policy in the `root` namespace. The following commands use a leader running via the Conjur Intro project.
+*
+
+Run the following command to load our API Policy Factory:
+
+```sh
+CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load
+```
+
+*Note: you'll be prompted for the admin user password.*
+
+### View and Use the Factory
+
+In the UI, navigate to the Policy Factories page: ex. `https://localhost/ui/factories`.
+
+*Note: this page is not accessable in the navigation. Once the feature reaches GA, it will be added.*
+
+![](docs/assets/factory-classifications.png)
+
+Click `Default`
+
+![](docs/assets/factory-classification-list.png)
+
+Click the blue `Create` button
+
+![](docs/assets/factory-form.png)
+
+To create a new set of API credentials with our factory, fill the fields in with the following:
+
+- `Resource Identifier` - GitLab
+- `Policy Branch` - root
+- `API URL` - https://mydomain.gitlab.com
+- `API Key` - supersecret123-key
+
+
+After clicking the `Create` button, navigate to the policies page: `/ui/policies`
+
+Notice we now have a policy `GitLab` in our list:
+
+![](docs/assets/policies.png)
+
+
+Clicking on the `GitLab` Policy, we can see the details, including our groups and variables.
+
+![](docs/assets/policy-details.png)

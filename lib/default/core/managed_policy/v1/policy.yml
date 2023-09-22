@@ -1,0 +1,9 @@
+- !group <%= name %>-admins
+- !policy
+  id: <%= name %>
+  owner: !group <%= name %>-admins
+  annotations:
+    factory: core/v1/managed-policy
+<% annotations.each do |key, value| -%>
+    <%= key %>: <%= value %>
+<% end -%>

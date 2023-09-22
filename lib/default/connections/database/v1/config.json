@@ -1,0 +1,31 @@
+{
+  "title": "Database Connection Template",
+  "description": "All information for connecting to a database",
+  "variables": {
+    "url": {
+      "required": true,
+      "description": "Database URL"
+    },
+    "port": {
+      "required": true,
+      "description": "Database Port"
+    },
+    "username": {
+      "required": true,
+      "description": "Database Username"
+    },
+    "password": {
+      "required": true,
+      "description": "Database Password"
+    },
+    "ssl-certificate": {
+      "description": "Client SSL Certificate"
+    },
+    "ssl-key": {
+      "description": "Client SSL Key"
+    },
+    "ssl-ca-certificate": {
+      "description": "CA Root Certificate"
+    }
+  }
+}
