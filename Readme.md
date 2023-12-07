@@ -61,7 +61,7 @@ As an example, let's create a Policy Factory that simplifies the process of stor
 
 ### Generate Factory Stubs
 
-First, let's generate the neccisary factory stubs:
+First, let's generate the necessary factory stubs:
 
 ```sh
 bin/create api_credentials
