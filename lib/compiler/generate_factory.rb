@@ -62,29 +62,33 @@ module Compiler
         '',
         '  body:'
       ].tap do |policy|
-        if configuration['variables']
+        if configuration['variables'] && configuration['without_variable_group'].to_s.downcase != 'true'
           policy.push('  - &variables')
 
           policy.concat(configuration['variables'].map { |variable, _| "    - !variable #{variable}" })
           policy.push('')
         end
         policy.concat(policy_template.split("\n").map { |line| "  #{line}" })
-        # policy
       end
         .join("\n")
     end
 
     # Creates the appropriate JSON Schema based on the configuration
     def generate_schema(configuration:)
+      properties = {}.tap do |property_hsh|
+        unless configuration['include_identifier'].to_s.downcase == 'false'
+          property_hsh[:id] = { description: 'Resource Identifier', type: 'string' }
+        end
+        unless configuration['include_annotations'].to_s.downcase == 'false'
+          property_hsh[:annotations] = { description: 'Additional annotations', type: 'object' }
+        end
+      end
       {
         '$schema': 'http://json-schema.org/draft-06/schema#',
         title: configuration['title'],
         description: configuration['description'],
         type: 'object',
-        properties: {
-          id: { description: 'Resource Identifier', type: 'string' },
-          annotations: { description: 'Additional annotations', type: 'object' }
-        },
+        properties: properties,
         required: []
       }.tap do |schema|
         # If branch is not defined, require it in the payload
@@ -99,7 +103,7 @@ module Compiler
         if configuration.key?('policy_template_variables')
           configuration['policy_template_variables'].each do |variable, values|
             schema[:properties][variable] = { description: values['description'], type: 'string' }
-            schema[:required] << variable if values['required'].to_s.downcase == 'true'
+            schema[:required] << variable if values['required'].to_s.downcase == 'true' && !schema[:required].include?(variable)
             # Fragile, but we need a way to set annotations as an object.
             schema[:properties]['annotations'][:type] = 'object' if variable == 'annotations'
           end
