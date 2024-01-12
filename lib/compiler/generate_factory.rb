@@ -55,10 +55,10 @@ module Compiler
         '- !policy',
         '  id: <%= id %>',
         '  annotations:',
-        "    factory: #{@classification}/#{@version}/#{@name}",
-        '  <% annotations.each do |key, value| -%>',
-        '      <%= key %>: <%= value %>',
-        '  <% end -%>',
+        # "    factory: #{@classification}/#{@version}/#{@name}",
+        '<% annotations.each do |key, value| -%>',
+        '    <%= key %>: <%= value %>',
+        '<% end -%>',
         '',
         '  body:'
       ].tap do |policy|
