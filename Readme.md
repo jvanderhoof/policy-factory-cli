@@ -31,9 +31,10 @@ This project includes a number of pre-constructed factories. Default templates i
 - Core
   - Grant
   - Group
-  - Managed Policy
+  - Host
   - Policy
   - User
+  - Variable
 
 To load the default set of Factories into Conjur (running via Conjur Intro), run:
 
