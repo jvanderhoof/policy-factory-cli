@@ -7,7 +7,6 @@
   restricted_to: <%= ip_range %>
 <% end -%>
   annotations:
-    factory: core/v1/user
 <% annotations.each do |key, value| -%>
     <%= key %>: <%= value %>
 <% end -%>

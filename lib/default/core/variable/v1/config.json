@@ -1,0 +1,11 @@
+{
+  "title": "Variable",
+  "description": "Creates a Conjur Variable",
+  "without_variable_group": true,
+  "variables": {
+    "value": {
+      "required": true,
+      "description": "Variable value"
+    }
+  }
+}

@@ -20,25 +20,25 @@ end
 
 def base_template
   <<~TEMPLATE
-  - !policy
-    id: conjur
-    body:
     - !policy
-      id: factories
+      id: conjur
       body:
-      <% templates.each do |template, factories| %>
       - !policy
-        id: <%= template %>
+        id: factories
         body:
-      <% factories.each do |factory| %>
-        - !variable <%= factory %>
-      <% end %>
-      <% end %>
+      <%- templates.each do |template, factories| -%>
+        - !policy
+          id: <%= template %>
+          body:
+        <%- factories.each do |factory| -%>
+          - !variable <%= factory %>
+        <%- end -%>
+      <%- end -%>
   TEMPLATE
 end
 
 def render(template:, **args)
-  ERB.new(template, trim_mode: '<>').result_with_hash(args)
+  ERB.new(template, trim_mode: '-').result_with_hash(args)
 end
 
 def generate_base_policy(templates)
@@ -118,7 +118,6 @@ namespace :policy_factory do
 
   task :load do
     template_folder = ENV.fetch('TEMPLATE_FOLDER', 'templates')
-
     templates = available_templates(Dir["#{Dir.pwd}/lib/#{template_folder}/**/*.json"])
 
     if templates.empty?
@@ -126,7 +125,6 @@ namespace :policy_factory do
       exit
     end
     puts "Loading templates from 'lib/#{template_folder}'\n\n"
-
     client.load_policy('root', generate_base_policy(templates))
 
     templates.each do |classification, factories|

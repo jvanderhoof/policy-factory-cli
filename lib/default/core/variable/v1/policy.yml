@@ -1,0 +1,28 @@
+- !variable
+
+- !group view
+- !group retrieve
+- !group update
+
+- !permit
+  role: !group view
+  privilege: [ read ]
+  resource: !variable
+
+- !permit
+  role: !group retrieve
+  privilege: [ execute ]
+  resource: !variable
+
+- !permit
+  role: !group update
+  privilege: [ update ]
+  resource: !variable
+
+- !grant
+  member: !group retrieve
+  role: !group view
+
+- !grant
+  member: !group update
+  role: !group retrieve

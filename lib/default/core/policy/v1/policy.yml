@@ -4,7 +4,6 @@
   owner: !<%= owner_type %> <%= owner_role %>
 <% end -%>
   annotations:
-    factory: core/v1/policy
 <% annotations.each do |key, value| -%>
     <%= key %>: <%= value %>
 <% end -%>
