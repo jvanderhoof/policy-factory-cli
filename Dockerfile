@@ -6,12 +6,11 @@ ENV INSTALL_PATH /opt/app
 RUN mkdir -p $INSTALL_PATH
 
 COPY Gemfile Gemfile.lock ./
-RUN gem install rails bundler
+RUN gem install rails bundler:2.5
 
 RUN bundle
 
-#RUN chown -R user:user /opt/app
-WORKDIR /opt/app
+WORKDIR $INSTALL_PATH
 
 # Run a shell
 CMD ["/bin/bash"]

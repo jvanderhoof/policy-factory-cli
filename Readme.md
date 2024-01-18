@@ -51,7 +51,7 @@ API_KEY=<api-key> CONJUR_URL=<http://localhost:3000> ACCOUNT=cucumber CONJUR_USE
 
 *This quickstart assumes you've cloned this repository locally, and are calling commands from inside this project directory.*
 
-#### Factory with Variables
+### Factory with Variables
 
 As an example, let's create a Policy Factory that simplifies the process of storing API credentials for various services that offer APIs. Before starting, let's define what we want:
 
@@ -175,7 +175,6 @@ To create a new set of API credentials with our factory, fill the fields in with
 - `Policy Branch` - root
 - `API URL` - https://mydomain.gitlab.com
 - `API Key` - supersecret123-key
-
 
 After clicking the `Create` button, navigate to the policies page: `/ui/policies`
 

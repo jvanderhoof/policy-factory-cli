@@ -1,8 +1,0 @@
-- !group <%= name %>-admins
-- !policy
-  id: <%= name %>
-  owner: !group <%= name %>-admins
-  annotations:
-<% annotations.each do |key, value| -%>
-    <%= key %>: <%= value %>
-<% end -%>

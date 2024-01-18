@@ -1,4 +1,4 @@
-- !user
+- !host
   id: <%= id %>
 <% if defined?(owner_role) && defined?(owner_type) -%>
   owner: !<%= owner_type %> <%= owner_role %>
