@@ -1,0 +1,2 @@
+- !delete
+  record: !<%= record_type %> <%= record_id %>

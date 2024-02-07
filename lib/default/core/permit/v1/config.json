@@ -1,0 +1,27 @@
+{
+  "title": "Permit Template",
+  "description": "Enables authorization for roles to access resources",
+  "wrap_with_policy": false,
+  "policy_template_variables": {
+    "role_resource_type": {
+      "required": true,
+      "description": "The role type (group, host, user, etc.) for the permit"
+    },
+    "role_resource_id": {
+      "required": true,
+      "description": "The role resource identifier for the permit"
+    },
+    "resource_type": {
+      "required": true,
+      "description": "The target resource type (group, host, user, etc.) for the permit"
+    },
+    "resource_id": {
+      "required": true,
+      "description": "The target resource identifier for the permit"
+    },
+    "privileges": {
+      "required": true,
+      "description": "Comma separated list of privileges to grant to the role"
+    }
+  }
+}

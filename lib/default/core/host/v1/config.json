@@ -7,10 +7,6 @@
       "required": true,
       "description": "Host ID"
     },
-    "branch": {
-      "required": true,
-      "description": "Policy branch to load this host into"
-    },
     "annotations": {
       "description": "Additional annotations"
     },

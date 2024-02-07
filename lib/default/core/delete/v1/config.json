@@ -1,0 +1,19 @@
+{
+  "title": "Delete Template",
+  "description": "Removes a role or resource from a policy",
+  "wrap_with_policy": false,
+  "policy_template_variables": {
+    "branch": {
+      "required": true,
+      "description": "Policy branch to apply this delete to"
+    },
+    "record_type": {
+      "required": true,
+      "description": "The role or resource type (group, host, user, etc.) to delete"
+    },
+    "record_id": {
+      "required": true,
+      "description": "The role or resource identifier to delete"
+    }
+  }
+}

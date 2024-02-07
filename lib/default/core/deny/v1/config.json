@@ -1,0 +1,27 @@
+{
+  "title": "Deny Template",
+  "description": "Removes authorization for roles to access resources",
+  "wrap_with_policy": false,
+  "policy_template_variables": {
+    "role_resource_type": {
+      "required": true,
+      "description": "The role type (group, host, user, etc.) for the deny"
+    },
+    "role_resource_id": {
+      "required": true,
+      "description": "The role resource identifier for the deny"
+    },
+    "resource_type": {
+      "required": true,
+      "description": "The target resource type (group, host, user, etc.) for the deny"
+    },
+    "resource_id": {
+      "required": true,
+      "description": "The target resource identifier for the deny"
+    },
+    "privileges": {
+      "required": true,
+      "description": "Comma separated list of privileges to deny to the role"
+    }
+  }
+}

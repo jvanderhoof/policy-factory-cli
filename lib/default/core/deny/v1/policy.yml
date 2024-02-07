@@ -1,0 +1,4 @@
+- !deny
+  role: !<%= role_resource_type %> <%= role_resource_id %>
+  resource: !<%= resource_type %> <%= resource_id %>
+  privileges: [<%= privileges.downcase %>]
