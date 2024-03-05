@@ -1,7 +1,13 @@
 {
   "title": "Database Connection Template",
   "description": "All information for connecting to a database",
+  "policy_type": "variable-set",
   "variables": {
+    "type": {
+      "required": true,
+      "description": "Database Type",
+      "valid_values": ["sqlserver", "postgresql", "mysql", "oracle", "db2", "sqlite"]
+    },
     "url": {
       "required": true,
       "description": "Database URL"

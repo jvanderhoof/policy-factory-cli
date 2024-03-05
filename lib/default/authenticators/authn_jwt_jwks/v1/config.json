@@ -1,7 +1,8 @@
 {
   "title": "Authn-JWT JWKS Template",
   "description": "Create a new Authn-JWT Authenticator using a JWKS endpoint",
-  "default_policy_branch": "/conjur/authn-jwt",
+  "default_policy_branch": "conjur/authn-jwt",
+  "policy_type": "authenticator",
   "variables": {
     "jwks-uri": {
       "required": true,

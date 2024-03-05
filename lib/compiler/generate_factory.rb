@@ -11,6 +11,9 @@ module Compiler
     end
 
     def generate(policy_template:, configuration:)
+      if policy_template.nil? && configuration['policy_type'].present?
+        policy_template = File.read("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
+      end
       schema = generate_schema(configuration: configuration)
       factory_policy_template = generate_policy_template(
         configuration: configuration,
@@ -106,6 +109,16 @@ module Compiler
             schema[:required] << variable if values['required'].to_s.downcase == 'true' && !schema[:required].include?(variable)
             # Fragile, but we need a way to set annotations as an object.
             schema[:properties]['annotations'][:type] = 'object' if variable == 'annotations'
+            if values['default'].present?
+              schema[:properties][variable][:default] = values['default']
+            end
+            if values['valid_values'].present?
+              schema[:properties][variable][:enum] = values['valid_values']
+            end
+            if values['type'].present?
+              schema[:properties][variable][:type] = values['type']
+            end
+
           end
         end
         if configuration.key?('variables')
@@ -114,6 +127,17 @@ module Compiler
 
           configuration['variables'].each do |variable, values|
             schema[:properties][:variables][:properties][variable] = { description: values['description'], type: 'string' }
+            if values['default'].present?
+              schema[:properties][:variables][:properties][variable][:default] = values['default']
+            end
+
+            if values['valid_values'].present?
+              schema[:properties][:variables][:properties][variable][:enum] = values['valid_values']
+            end
+
+            if values['type'].present?
+              schema[:properties][:variables][:properties][variable][:type] = values['type']
+            end
 
             if values.key?('required') && values['required'] == true
               schema[:properties][:variables][:required] << variable

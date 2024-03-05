@@ -1,6 +1,8 @@
 {
   "title": "Authn-OIDC Template",
   "description": "Create a new Authn-OIDC Authenticator",
+  "default_policy_branch": "conjur/authn-oidc",
+  "policy_type": "authenticator",
   "variables": {
     "provider-uri": {
       "required": true,

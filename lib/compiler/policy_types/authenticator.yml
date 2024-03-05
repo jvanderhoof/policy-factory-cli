@@ -1,0 +1,38 @@
+- !webservice
+
+- !group
+  id: circuit-breaker
+  annotations:
+    description: Provides a mechanism for breaking access to this authenticator.
+
+- !group
+  id: authenticatable
+  annotations:
+    description: "Roles that can authenticate using this authenticator."
+
+# Allows 'authenticatable' group to be cut in case of compromise
+- !grant
+  member: !group authenticatable
+  role: !group circuit-breaker
+
+# Roles (via the circuit-breaker group) can authenticate
+- !permit
+  role: !group circuit-breaker
+  privilege: [ read, authenticate ]
+  resource: !webservice
+
+# Enables Authenticator Status checking/troubleshooting
+- !webservice
+  id: status
+  annotations:
+    description: Web service for checking authenticator status
+
+- !group
+  id: operators
+  annotations:
+    description: Group with permission to check the authenticator status
+
+- !permit
+  role: !group operators
+  privilege: [ read ]
+  resource: !webservice status

@@ -6,7 +6,6 @@
     "id": { "required": true, "description": "Policy ID" },
     "branch": { "required": true, "description": "Policy branch to load this policy into" },
     "owner_role": { "description": "The Conjur Role that will own this policy" },
-    "owner_type": { "description": "The resource type of the owner of this policy" },
-    "annotations": { "description": "Additional annotations" }
+    "owner_type": { "description": "The resource type of the owner of this policy" }
   }
 }

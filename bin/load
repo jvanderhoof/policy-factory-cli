@@ -13,10 +13,12 @@ run() {
     --volume "$PWD:/opt/app/" \
     --env PASSWORD=$password \
     --env API_KEY=$API_KEY \
+    --env CONJUR_AUTH_TOKEN=$CONJUR_AUTH_TOKEN \
     --env CONJUR_URL=$CONJUR_URL \
     --env USERNAME=$CONJUR_USERNAME \
     --env ACCOUNT=$ACCOUNT \
     --env TEMPLATE_FOLDER=$TEMPLATE_FOLDER \
+    --env TARGET_POLICY=$TARGET_POLICY \
     --rm \
     --tty \
     --interactive \
@@ -43,8 +45,10 @@ main() {
   # Verify we have the environment variables we need
   verify_required_variables_present
 
+  echo "$API_KEY - $CONJUR_AUTH_TOKEN"
+
   # Request password from user if API key is not present
-  if [[ -z "$API_KEY" ]]; then
+  if [[ -z "$API_KEY" && -z "$CONJUR_AUTH_TOKEN" ]]; then
     echo -n "Conjur '$CONJUR_USERNAME' Password: "
     read -sr password
     echo
@@ -53,10 +57,11 @@ main() {
   # Call the command
   run
 
-  # echo
-  # echo 'Factories have been loaded successfully'
+  echo
+  echo 'Factories have been loaded successfully'
 }
 
+TARGET_POLICY="${TARGET_POLICY:-'conjur/factories'}"
 TEMPLATE_FOLDER="templates"
 
 if [[ "$1" == "default" ]]; then

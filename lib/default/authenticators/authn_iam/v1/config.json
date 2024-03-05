@@ -1,5 +1,6 @@
 {
   "title": "Authn-IAM Template",
   "description": "Create a new Authn-IAM authenticator",
-  "default_policy_branch": "/conjur/authn-iam"
+  "default_policy_branch": "conjur/authn-iam",
+  "policy_type": "authenticator"
 }

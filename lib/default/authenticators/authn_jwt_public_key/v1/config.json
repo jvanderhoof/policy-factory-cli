@@ -1,7 +1,8 @@
 {
   "title": "Authn-JWT Public Key Template",
   "description": "Create a new Authn-JWT Authenticator that validates using a public key",
-  "default_policy_branch": "/conjur/authn-jwt",
+  "default_policy_branch": "conjur/authn-jwt",
+  "policy_type": "authenticator",
   "variables": {
     "public-keys": {
       "required": true,
