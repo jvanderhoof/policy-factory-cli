@@ -61,8 +61,8 @@ main() {
   echo 'Factories have been loaded successfully'
 }
 
-TARGET_POLICY="${TARGET_POLICY:-'conjur/factories'}"
-TEMPLATE_FOLDER="templates"
+TARGET_POLICY="${TARGET_POLICY:-conjur/factories}"
+TEMPLATE_FOLDER="custom"
 
 if [[ "$1" == "default" ]]; then
   TEMPLATE_FOLDER="default"

@@ -19,10 +19,6 @@ module Compiler
         configuration: configuration,
         policy_template: policy_template
       )
-      puts(schema.inspect)
-      puts
-      puts(factory_policy_template)
-      puts '--------'
       create_factory(
         schema: schema,
         policy_template: factory_policy_template,
@@ -58,7 +54,6 @@ module Compiler
         '- !policy',
         '  id: <%= id %>',
         '  annotations:',
-        # "    factory: #{@classification}/#{@version}/#{@name}",
         '<% annotations.each do |key, value| -%>',
         '    <%= key %>: <%= value %>',
         '<% end -%>',
@@ -96,10 +91,12 @@ module Compiler
       }.tap do |schema|
         # If branch is not defined, require it in the payload
         if configuration['default_policy_branch'].to_s.empty?
-          schema[:properties][:branch] = { description: 'Policy branch to load this resource into', type: 'string' }
+          schema[:properties][:branch] = { description: 'Policy branch to apply this policy into', type: 'string' }
           schema[:required] << 'branch'
         end
-        unless configuration['wrap_with_policy'].to_s.downcase == 'false'
+        # if
+        if configuration['wrap_with_policy'].to_s.downcase != 'false' ||
+          configuration['include_identifier'].to_s.downcase != 'false'
           schema[:required] << 'id'
         end
 
@@ -146,12 +143,5 @@ module Compiler
         end
       end
     end
-
-    # def valid?
-    #   config = JSON.parse(@configuration)
-    #   %w[title description].each do |attr|
-    #     raise "'config.json' must include a '#{attr}', '\"#{attr}\": \"...\"'"
-    #   end
-    # end
   end
 end

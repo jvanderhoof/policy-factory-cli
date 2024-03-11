@@ -84,7 +84,7 @@ end
 
 def create_factory(classification:, version:, name:)
   version = "v#{version.gsub(/\D/, '')}"
-  target_directory = "lib/templates/#{classification.underscore}/#{name.underscore}/#{version}"
+  target_directory = "factories/custom/#{classification.underscore}/#{name.underscore}/#{version}"
   FileUtils.mkdir_p(target_directory)
 
   if File.exist?("#{target_directory}/policy.yml")
@@ -128,14 +128,14 @@ namespace :policy_factory do
 
   task :load do
     target_policy = ENV.fetch('TARGET_POLICY', 'conjur/factories')
-    template_folder = ENV.fetch('TEMPLATE_FOLDER', 'templates')
-    templates = available_templates(Dir["#{Dir.pwd}/lib/#{template_folder}/**/*.json"])
+    template_folder = ENV.fetch('TEMPLATE_FOLDER', 'default')
+    templates = available_templates(Dir["#{Dir.pwd}/factories/#{template_folder}/**/*.json"])
 
     if templates.empty?
-      puts "It looks like there are no templates in 'lib/#{template_folder}'"
+      puts "It looks like there are no templates in 'factories/#{template_folder}'"
       exit
     end
-    puts "Loading templates from 'lib/#{template_folder}'\n\n"
+    puts "Loading templates from 'factories/#{template_folder}'\n\n"
     puts "Generated Base Template:"
     puts generate_base_policy(policy_path: target_policy, templates: templates)
     client.load_policy('root',  generate_base_policy(policy_path: target_policy, templates: templates))
@@ -144,7 +144,7 @@ namespace :policy_factory do
       factories.each do |factory_version|
         version, factory = factory_version.split('/')
 
-        factory_file_path = "lib/#{template_folder}/#{classification}/#{factory}/#{version}"
+        factory_file_path = "factories/#{template_folder}/#{classification}/#{factory}/#{version}"
         puts "  loading template from: '#{factory_file_path}'"
         policy_template = File.exist?("#{factory_file_path}/policy.yml") ? File.read("#{factory_file_path}/policy.yml") : nil
 
