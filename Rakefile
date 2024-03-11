@@ -126,6 +126,25 @@ namespace :policy_factory do
     )
   end
 
+  task :inspect, [:path] do |_, args|
+    factory_file_path = args[:path]
+    classification, name, version = args[:path].split('/').last(3)
+    compiled_factory = Compiler::GenerateFactory.new(
+        classification: classification,
+        version: version,
+        name: name
+      ).generate(
+        policy_template: File.exist?("#{factory_file_path}/policy.yml") ? File.read("#{factory_file_path}/policy.yml") : nil,
+        configuration: JSON.parse(File.read("#{factory_file_path}/config.json"))
+      )
+    factory = JSON.parse(Base64.decode64(compiled_factory))
+    puts 'Factory Schema:'
+    puts JSON.pretty_generate(factory)
+    puts
+    puts 'Factory Policy:'
+    puts Base64.decode64(factory['policy'])
+  end
+
   task :load do
     target_policy = ENV.fetch('TARGET_POLICY', 'conjur/factories')
     template_folder = ENV.fetch('TEMPLATE_FOLDER', 'default')
