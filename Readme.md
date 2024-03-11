@@ -9,6 +9,9 @@ specific needs.
 
 ## Resources
 
+- Tuturials
+  - [Loading Default Factories](#load-default-templates)
+  - [Create an API Factory](#factory-with-variables)
 - How To
   - [Create a Simple Factory](docs/how-to-simple-factory.md)
 - Reference
@@ -22,9 +25,12 @@ specific needs.
 This project includes a number of pre-constructed factories. Default templates include the following:
 
 - Authenticators
-    - AuthnJwt (using JWKS)
-    - AuthnJwt (using public keys)
-    - AuthnOIDC
+  - AuthnAzure
+  - AuthnGCP
+  - AuthnIam
+  - AuthnJwt (using JWKS)
+  - AuthnJwt (using public keys)
+  - AuthnOIDC
 - Connections
     - Database
 - Core
@@ -59,7 +65,7 @@ As an example, let's create a Policy Factory that simplifies the process of stor
 - create a group with permission to see and retrieve these variables
 - create an admin group to administer these credentials
 
-### Generate Factory Stubs
+#### Generate Factory Stubs
 
 First, let's generate the necessary factory stubs:
 
@@ -69,7 +75,7 @@ bin/create --classification connections api
 
 This command will create two files (`config.json` and `policy.yml` in `lib/templates/connections/api/v1`).
 
-### Update Factory Configuration
+#### Update Factory Configuration
 
 Open the API Policy Factory config file: `lib/templates/connections/api/v1/config.json`.  It will look like the following:
 
@@ -111,7 +117,7 @@ Update it to the following:
 
 Save and close the `config.json` file.
 
-### Policy
+#### Policy
 
 In the above configuration, the attribute set `"policy_type": "variable-set"`
 creates two groups: `consumers` and `administrators`. Consumers are able to view
@@ -124,7 +130,7 @@ As we're using the CLI Factory compiler to generate the necessary policy for our
 rm lib/templates/connections/api/v1/policy.yml
 ```
 
-### Load the Factory
+#### Load the Factory
 
 *In order to load Policy Factories, your role needs permission to create policy in the `root` namespace. The following commands use a leader running via the Conjur Intro project.
 *
@@ -137,7 +143,7 @@ CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load
 
 *Note: you'll be prompted for the admin user password.*
 
-### View and Use the Factory
+#### View and Use the Factory
 
 In the UI, navigate to the Policy Factories page: ex. `https://localhost/ui/factories`.
 
