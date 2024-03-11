@@ -3,6 +3,7 @@
 The following CLIs are available in this project:
 
 - `bin/create` - generates factory stubs
+- `bin/inspect` - generates and displays the JSON Schema and Policy template.
 - `bin/load` - loads factories
 
 ## Create Factory Stubs
@@ -15,7 +16,7 @@ To create a new Factory, run the following:
 bin/create <factory-name>
 ```
 
-This will create two stub files in `lib/templates/default/<factory-name>/v1`:
+This will create two stub files in `factories/custom/<factory-name>/v1`:
 
 - `config.json` - defines the variables for the factory
 - `policy.yml` - defines the Factory's Conjur Policy
@@ -29,7 +30,7 @@ bin/create \
   <factory-name>
 ```
 
-The above command will create the factory stub files in the directory: `lib/templates/authenticators/<factory-name>/v2`.
+The above command will create the factory stub files in the directory: `lib/custom/authenticators/<factory-name>/v2`.
 
 ### Create Reference
 
@@ -51,6 +52,101 @@ Usage: bin/create [options] <factory-name>:
     -v, --version <version>     Version for a factory. By default, the version will be 'v1'.
 ```
 
+## Inspecting Factories
+
+Before loading a new Factory it's helpful to view the JSON Schema and Policy template
+that will be pushed to Conjur. The following command allows you to inspect any Factory:
+
+```
+bin/inspect <path-to-factory>
+```
+
+As an example, let's look at the `default/core/host/v1` Factory:
+
+```sh
+bin/inspect factories/default/core/host/v1
+```
+
+It results in the following:
+
+```sh
+Factory Schema:
+{
+  "version": "v1",
+  "policy": "LSAhaG9zdAogIGlkOiA8JT0gaWQgJT4KPCUgaWYgZGVmaW5lZD8ob3duZXJfcm9sZSkgJiYgZGVmaW5lZD8ob3duZXJfdHlwZSkgLSU+CiAgb3duZXI6ICE8JT0gb3duZXJfdHlwZSAlPiA8JT0gb3duZXJfcm9sZSAlPgo8JSBlbmQgLSU+CjwlIGlmIGRlZmluZWQ/KGlwX3JhbmdlKSAtJT4KICByZXN0cmljdGVkX3RvOiA8JT0gaXBfcmFuZ2UgJT4KPCUgZW5kIC0lPgogIGFubm90YXRpb25zOgo8JSBhbm5vdGF0aW9ucy5lYWNoIGRvIHxrZXksIHZhbHVlfCAtJT4KICAgIDwlPSBrZXkgJT46IDwlPSB2YWx1ZSAlPgo8JSBlbmQgLSU+Cg==",
+  "policy_branch": "<%= branch %>",
+  "schema": {
+    "$schema": "http://json-schema.org/draft-06/schema#",
+    "title": "Host Template",
+    "description": "Creates a Conjur Host",
+    "type": "object",
+    "properties": {
+      "id": {
+        "description": "Resource Identifier",
+        "type": "string"
+      },
+      "annotations": {
+        "description": "Additional annotations",
+        "type": "object"
+      },
+      "branch": {
+        "description": "Policy branch to apply this policy into",
+        "type": "string"
+      },
+      "owner_role": {
+        "description": "The role identifier that will own this host",
+        "type": "string"
+      },
+      "owner_type": {
+        "description": "The resource type of the owner of this host",
+        "type": "string"
+      },
+      "ip_range": {
+        "description": "Limits the network range the host is allowed to authenticate from",
+        "type": "string"
+      }
+    },
+    "required": [
+      "branch",
+      "id"
+    ]
+  }
+}
+
+Factory Policy:
+- !host
+  id: <%= id %>
+<% if defined?(owner_role) && defined?(owner_type) -%>
+  owner: !<%= owner_type %> <%= owner_role %>
+<% end -%>
+<% if defined?(ip_range) -%>
+  restricted_to: <%= ip_range %>
+<% end -%>
+  annotations:
+<% annotations.each do |key, value| -%>
+    <%= key %>: <%= value %>
+<% end -%>
+```
+
+This is verbose, but gives some detail into the JSON Schema (used by Conjur's
+implementation of Policy Factories).
+
+### Inspect Reference
+
+View all options with the help flag:
+
+```sh
+bin/inspect --help
+
+A tool that shows the JSON Schema and corresponding Policy generated and loaded into Conjur.
+
+Synopsis: bin/inspect [command options] <factory-path>
+
+Usage: bin/inspect [options] <factory-path>:
+
+    -h, --help                  Shows this help message.
+```
+
 ## Loading Factories
 
 There are a few key bits of information required to load Factories:
@@ -67,11 +163,23 @@ There are a few key bits of information required to load Factories:
 
 *Note: The role used to load factories must have permission to add policy into the `root` namespace.*
 
+### Loading default Factories
+
+This CLI comes with a set of Policy Factories. These are intended to speed up the
+development of new Factories and provide a solid set of Factories for customers
+to use.
+
+To load default Factories:
+
+```sh
+CONJUR_URL=https://<conjur-url> ACCOUNT=<account> CONJUR_USERNAME=<role> bin/load default
+```
+
 ### Loading custom Factories
 
-By default, calling `bin/load` loads factories from `lib/templates`.
+By default, calling `bin/load` loads factories from `factories/custom`.
 
-*Note: This command loads ALL factories present in the `lib/templates`.*
+*Note: This command loads ALL factories present in the `factories/custom`.*
 
 #### With a username/password
 
