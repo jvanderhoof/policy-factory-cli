@@ -4,7 +4,7 @@
 
 The following is a full set of valid configuration elements:
 
-```json
+```js
 {
   // Defines a Factory's Title. This is displayed in the UI.
   "title": "Group Template",
@@ -105,7 +105,7 @@ The following is a full set of valid configuration elements:
 In the above configuration, `policy_template_variables` and `variable` sets include the same
 set of valid attribute definitions.  They are as follows:
 
-```json
+```js
 "<variable-identifier>": {
   // Marks the input value as required.
   //
