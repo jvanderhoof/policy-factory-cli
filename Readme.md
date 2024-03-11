@@ -16,7 +16,6 @@ specific needs.
   - [CLI](docs/reference-cli.md)
   - [Configuration](docs/reference-configuration.md)
   - [Policy](docs/reference-policy.md)
-  -
 
 ## Load Default Templates
 
