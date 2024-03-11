@@ -1,0 +1,13 @@
+{
+  "title": "",
+  "description": "",
+  "variables": {
+    "variable-1": {
+      "required": true,
+      "description": ""
+    },
+    "variable-2": {
+      "description": ""
+    }
+  }
+}

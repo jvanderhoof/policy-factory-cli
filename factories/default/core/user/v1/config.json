@@ -1,0 +1,10 @@
+{
+  "title": "User Template",
+  "description": "Creates a Conjur User",
+  "wrap_with_policy": false,
+  "policy_template_variables": {
+    "owner_role": { "description": "The Conjur Role that will own this user" },
+    "owner_type": { "description": "The resource type of the owner of this user" },
+    "ip_range": { "description": "Limits the network range the user is allowed to authenticate from" }
+  }
+}
