@@ -2,34 +2,28 @@
   id: consumers
   annotations:
     description: "Roles that can see and retrieve credentials."
-
 - !group
   id: administrators
   annotations:
     description: "Roles that can update credentials."
-
 - !group
   id: circuit-breaker
   annotations:
     description: Provides a mechanism for breaking access to this authenticator.
     editable: true
-
 # Allows 'consumers' group to be cut in case of compromise
 - !grant
   member: !group consumers
   role: !group circuit-breaker
-
 # Administrators also has the consumers role
 - !grant
   member: !group administrators
   role: !group consumers
-
 # Consumers (via the circuit-breaker group) can read and execute
 - !permit
   resource: *variables
   privileges: [ read, execute ]
   role: !group circuit-breaker
-
 # Administrators can update (they have read and execute via the consumers group)
 - !permit
   resource: *variables

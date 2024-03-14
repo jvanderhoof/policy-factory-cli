@@ -32,7 +32,7 @@ module Compiler
       Base64.strict_encode64(
         {
           version: @version,
-          policy: Base64.strict_encode64(policy_template),
+          policy: Base64.strict_encode64(policy_template.to_s),
           policy_branch: default_policy_branch(configuration),
           schema: schema
         }.to_json
@@ -50,23 +50,32 @@ module Compiler
     def generate_policy_template(configuration:, policy_template:)
       return policy_template if configuration['wrap_with_policy'].to_s.downcase == 'false'
 
-      [
+      default_policy = [
         '- !policy',
         '  id: <%= id %>',
         '  annotations:',
         '<% annotations.each do |key, value| -%>',
         '    <%= key %>: <%= value %>',
-        '<% end -%>',
-        '',
-        '  body:'
-      ].tap do |policy|
+        '<% end -%>'
+      ]
+      if configuration['variables'] &&
+        configuration['without_variable_group'].to_s.downcase != 'true' &&
+        policy_template.to_s.present?
+
+        default_policy.tap do |policy|
+          policy.push('')
+          policy.push('  body:')
+        end
+      end
+
+      default_policy.tap do |policy|
         if configuration['variables'] && configuration['without_variable_group'].to_s.downcase != 'true'
           policy.push('  - &variables')
 
           policy.concat(configuration['variables'].map { |variable, _| "    - !variable #{variable}" })
           policy.push('')
         end
-        policy.concat(policy_template.split("\n").map { |line| "  #{line}" })
+        policy.concat(policy_template.to_s.split("\n").map { |line| "  #{line}" })
       end
         .join("\n")
     end
@@ -83,8 +92,8 @@ module Compiler
       end
       {
         '$schema': 'http://json-schema.org/draft-06/schema#',
-        title: configuration['title'],
-        description: configuration['description'],
+        title: configuration['title'].to_s,
+        description: configuration['description'].to_s,
         type: 'object',
         properties: properties,
         required: []
@@ -94,9 +103,13 @@ module Compiler
           schema[:properties][:branch] = { description: 'Policy branch to apply this policy into', type: 'string' }
           schema[:required] << 'branch'
         end
-        # if
-        if configuration['wrap_with_policy'].to_s.downcase != 'false' ||
-          configuration['include_identifier'].to_s.downcase != 'false'
+        binding.pry
+        if configuration['wrap_with_policy'].to_s.downcase == 'false' &&
+           configuration['include_identifier'].to_s.downcase != 'false'
+          schema[:required] << 'id'
+        end
+        if configuration['include_identifier'].to_s.downcase != 'false' &&
+           schema[:required].exclude?('id')
           schema[:required] << 'id'
         end
 
