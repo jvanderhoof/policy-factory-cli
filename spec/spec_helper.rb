@@ -6,4 +6,6 @@ Bundler.require
 require 'pry'
 
 require 'simplecov'
-SimpleCov.start
+SimpleCov.start do
+  enable_coverage :branch
+end

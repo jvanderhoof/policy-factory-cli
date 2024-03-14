@@ -11,8 +11,13 @@ module Compiler
     end
 
     def generate(policy_template:, configuration:)
+      configuration = merge_with_default_configuration(configuration)
       if policy_template.nil? && configuration['policy_type'].present?
-        policy_template = File.read("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
+        if File.exist?("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
+          policy_template = File.read("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
+        else
+          policy_template = ''
+        end
       end
       schema = generate_schema(configuration: configuration)
       factory_policy_template = generate_policy_template(
@@ -27,6 +32,26 @@ module Compiler
     end
 
     private
+
+    def merge_with_default_configuration(configuration)
+      default_configuration.keys.each do |key|
+        configuration[key] = to_boolean(configuration[key])
+      end
+      default_configuration.merge(configuration)
+    end
+
+    def default_configuration
+      {
+        wrap_with_policy: true,
+        include_identifier: true,
+        include_annotations: true,
+        with_variable_group: true
+      }.stringify_keys
+    end
+
+    def to_boolean(str)
+      str.to_s.downcase != 'false'
+    end
 
     def create_factory(schema:, policy_template:, configuration:)
       Base64.strict_encode64(
@@ -58,10 +83,13 @@ module Compiler
         '    <%= key %>: <%= value %>',
         '<% end -%>'
       ]
-      if configuration['variables'] &&
-        configuration['without_variable_group'].to_s.downcase != 'true' &&
-        policy_template.to_s.present?
-
+      if configuration['policy_type'].present? && !configuration['variables']
+        unless policy_template.to_s.empty?
+          default_policy.push('')
+          default_policy.push('  body:')
+        end
+      end
+      if configuration['variables']
         default_policy.tap do |policy|
           policy.push('')
           policy.push('  body:')
@@ -69,10 +97,13 @@ module Compiler
       end
 
       default_policy.tap do |policy|
-        if configuration['variables'] && configuration['without_variable_group'].to_s.downcase != 'true'
-          policy.push('  - &variables')
-
-          policy.concat(configuration['variables'].map { |variable, _| "    - !variable #{variable}" })
+        if configuration['variables']
+          policy.push('  - &variables') if configuration['with_variable_group']
+          if configuration['with_variable_group']
+            policy.concat(configuration['variables'].map { |variable, _| "    - !variable #{variable}" })
+          else
+            policy.concat(configuration['variables'].map { |variable, _| "  - !variable #{variable}" })
+          end
           policy.push('')
         end
         policy.concat(policy_template.to_s.split("\n").map { |line| "  #{line}" })
@@ -83,10 +114,14 @@ module Compiler
     # Creates the appropriate JSON Schema based on the configuration
     def generate_schema(configuration:)
       properties = {}.tap do |property_hsh|
-        unless configuration['include_identifier'].to_s.downcase == 'false'
+        if configuration['wrap_with_policy'] && configuration['include_identifier']
+          property_hsh[:id] = { description: 'Resource Identifier', type: 'string' }
+        elsif configuration['wrap_with_policy']
+          property_hsh[:id] = { description: 'Resource Identifier', type: 'string' }
+        elsif configuration['include_identifier']
           property_hsh[:id] = { description: 'Resource Identifier', type: 'string' }
         end
-        unless configuration['include_annotations'].to_s.downcase == 'false'
+        if configuration['include_annotations']
           property_hsh[:annotations] = { description: 'Additional annotations', type: 'object' }
         end
       end
@@ -103,32 +138,24 @@ module Compiler
           schema[:properties][:branch] = { description: 'Policy branch to apply this policy into', type: 'string' }
           schema[:required] << 'branch'
         end
-        binding.pry
-        if configuration['wrap_with_policy'].to_s.downcase == 'false' &&
-           configuration['include_identifier'].to_s.downcase != 'false'
+        if configuration['wrap_with_policy'] && configuration['include_identifier']
           schema[:required] << 'id'
-        end
-        if configuration['include_identifier'].to_s.downcase != 'false' &&
-           schema[:required].exclude?('id')
+        elsif configuration['wrap_with_policy']
+          schema[:required] << 'id'
+        elsif configuration['include_identifier']
           schema[:required] << 'id'
         end
 
         if configuration.key?('policy_template_variables')
           configuration['policy_template_variables'].each do |variable, values|
-            schema[:properties][variable] = { description: values['description'], type: 'string' }
+            schema[:properties][variable] = { description: values['description'].to_s, type: 'string' }
             schema[:required] << variable if values['required'].to_s.downcase == 'true' && !schema[:required].include?(variable)
-            # Fragile, but we need a way to set annotations as an object.
-            schema[:properties]['annotations'][:type] = 'object' if variable == 'annotations'
             if values['default'].present?
               schema[:properties][variable][:default] = values['default']
             end
             if values['valid_values'].present?
               schema[:properties][variable][:enum] = values['valid_values']
             end
-            if values['type'].present?
-              schema[:properties][variable][:type] = values['type']
-            end
-
           end
         end
         if configuration.key?('variables')
@@ -136,7 +163,7 @@ module Compiler
           schema[:required] << 'variables'
 
           configuration['variables'].each do |variable, values|
-            schema[:properties][:variables][:properties][variable] = { description: values['description'], type: 'string' }
+            schema[:properties][:variables][:properties][variable] = { description: values['description'].to_s, type: 'string' }
             if values['default'].present?
               schema[:properties][:variables][:properties][variable][:default] = values['default']
             end
@@ -144,11 +171,6 @@ module Compiler
             if values['valid_values'].present?
               schema[:properties][:variables][:properties][variable][:enum] = values['valid_values']
             end
-
-            if values['type'].present?
-              schema[:properties][:variables][:properties][variable][:type] = values['type']
-            end
-
             if values.key?('required') && values['required'] == true
               schema[:properties][:variables][:required] << variable
             end

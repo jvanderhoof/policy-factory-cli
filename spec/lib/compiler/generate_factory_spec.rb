@@ -119,7 +119,7 @@ describe(Compiler::GenerateFactory) do
           expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
         end
       end
-      context 'when the factory does not wrap with policy' do
+      context 'when the factory is not wrapped with policy' do
         let(:configuration) do
           { wrap_with_policy: false }.to_json
         end
@@ -149,7 +149,7 @@ describe(Compiler::GenerateFactory) do
         it 'generates a factory without a policy template' do
           expect(decoded_policy_template(subject['policy'])).to eq('')
         end
-        context 'when the factory does not includes the identifier' do
+        context 'when the factory removes the identifier' do
           let(:configuration) do
             { wrap_with_policy: false, include_identifier: false }.to_json
           end
@@ -177,7 +177,7 @@ describe(Compiler::GenerateFactory) do
           end
         end
       end
-      context 'when the factory wraps with policy' do
+      context 'when the factory is wrapped in policy' do
         context 'when the factory does not explicitly remove the identifier' do
           let(:configuration) do
             { wrap_with_policy: false, include_identifier: false }.to_json
@@ -231,11 +231,11 @@ describe(Compiler::GenerateFactory) do
           end
         end
       end
-      context 'when the factory does not include the identifier' do
+      context 'when the factory is wrapped in policy but excludes the identifier' do
         let(:configuration) do
           { include_identifier: false }.to_json
         end
-        it 'generates a schema without the id input' do
+        it 'generates a schema with the id input' do
           expect(subject['schema']).to eq({
             "$schema" => "http://json-schema.org/draft-06/schema#",
             "description" => "",
@@ -248,8 +248,12 @@ describe(Compiler::GenerateFactory) do
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
+              "id" => {
+                "description" => "Resource Identifier",
+                "type" => "string"
+              }
             },
-            "required" => ["branch"],
+            "required" => ["branch", "id"],
             "title" => "",
             "type" => "object"
           })
@@ -257,6 +261,23 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy template without the identifier' do
           test_policy = <<~POLICY
             - !policy
+              id: <%= id %>
+              annotations:
+            <% annotations.each do |key, value| -%>
+                <%= key %>: <%= value %>
+            <% end -%>
+          POLICY
+          expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+        end
+      end
+      context 'when annotations are excluded' do
+        let(:configuration) do
+          { include_annotations: false }.to_json
+        end
+        it 'generates a policy with a minimum policy template' do
+          test_policy = <<~POLICY
+            - !policy
+              id: <%= id %>
               annotations:
             <% annotations.each do |key, value| -%>
                 <%= key %>: <%= value %>
@@ -265,185 +286,532 @@ describe(Compiler::GenerateFactory) do
           expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
         end
 
+        it 'generates a schema without annotations' do
+          expect(subject['schema']).to eq({
+            "$schema" => "http://json-schema.org/draft-06/schema#",
+            "description" => "",
+            "properties" => {
+              "branch" => {
+                "description" => "Policy branch to apply this policy into",
+                "type" => "string"
+              },
+              "id" => {
+                "description" => "Resource Identifier",
+                "type" => "string"
+              }
+            },
+            "required" => ["branch", "id"],
+            "title" => "",
+            "type" => "object"
+          })
+        end
       end
-
-
-
-      # let(:name) { 'policy' }
-      # let(:classification) { 'core' }
-
-      # let(:configuration) do
-      #   <<~CONFIG
-      #     {
-      #       "title": "Policy Template",
-      #       "description": "Creates a Conjur Policy",
-      #       "wrap_with_policy": false,
-      #       "policy_template_variables": {
-      #         "owner_role": { "description": "The Conjur Role that will own this policy" },
-      #         "owner_type": { "description": "The resource type of the owner of this policy" }
-      #       }
-      #     }
-      #   CONFIG
-      # end
-      # let(:policy_template) do
-      #   <<~POLICY
-      #   - !policy
-      #     id: <%= id %>
-      #   <% if defined?(owner_role) && defined?(owner_type) -%>
-      #     owner: !<%= owner_type %> <%= owner_role %>
-      #   <% end -%>
-      #     annotations:
-      #   <% annotations.each do |key, value| -%>
-      #       <%= key %>: <%= value %>
-      #   <% end -%>
-      #   POLICY
-      # end
-      # context 'when the configuration is valid' do
-      #   it 'return the expected schema' do
-      #     expect(subject).to eq({
-      #       "version" => "v1",
-      #       "policy" => "LSAhcG9saWN5CiAgaWQ6IDwlPSBpZCAlPgo8JSBpZiBkZWZpbmVkPyhvd25lcl9yb2xlKSAmJiBkZWZpbmVkPyhvd25lcl90eXBlKSAtJT4KICBvd25lcjogITwlPSBvd25lcl90eXBlICU+IDwlPSBvd25lcl9yb2xlICU+CjwlIGVuZCAtJT4KICBhbm5vdGF0aW9uczoKPCUgYW5ub3RhdGlvbnMuZWFjaCBkbyB8a2V5LCB2YWx1ZXwgLSU+CiAgICA8JT0ga2V5ICU+OiA8JT0gdmFsdWUgJT4KPCUgZW5kIC0lPgo=",
-      #       "policy_branch" => "<%= branch %>",
-      #       "schema" => {
-      #         "$schema" => "http://json-schema.org/draft-06/schema#",
-      #         "title" => "Policy Template",
-      #         "description" => "Creates a Conjur Policy",
-      #         "type" => "object",
-      #         "properties" => {
-      #           "id" => {
-      #             "description" => "Resource Identifier",
-      #             "type" => "string"
-      #           },
-      #           "annotations" => {
-      #             "description" => "Additional annotations",
-      #             "type" => "object"
-      #           },
-      #           "branch" => {
-      #             "description" => "Policy branch to apply this policy into",
-      #             "type" => "string"
-      #           },
-      #           "owner_role" => {
-      #             "description" => "The Conjur Role that will own this policy",
-      #             "type" => "string"
-      #           },
-      #           "owner_type" => {
-      #             "description" => "The resource type of the owner of this policy",
-      #             "type" => "string"
-      #           }
-      #         },
-      #         "required" => [
-      #           "branch",
-      #           "id"
-      #         ]
-      #       }
-      #     })
-      #   end
-      # end
+      context 'when policy template variables are defined' do
+        let(:configuration) do
+          { policy_template_variables: {foo: {}} }.to_json
+        end
+        it 'generates a schema with the defined variable' do
+          expect(subject['schema']).to eq({
+            "$schema" => "http://json-schema.org/draft-06/schema#",
+            "description" => "",
+            "properties" => {
+              "annotations" => {
+                "description"=>"Additional annotations",
+                "type" => "object"
+              },
+              "branch" => {
+                "description" => "Policy branch to apply this policy into",
+                "type" => "string"
+              },
+              "id" => {
+                "description" => "Resource Identifier",
+                "type" => "string"
+              },
+              "foo" => {
+                "description" => "",
+                "type" => "string"
+              }
+            },
+            "required" => ["branch", "id"],
+            "title" => "",
+            "type" => "object"
+          })
+        end
+        context 'when it is required' do
+          let(:configuration) do
+            { policy_template_variables: {foo: { required: true }} }.to_json
+          end
+          it 'generates a schema with the defined variable' do
+            expect(subject['schema']).to eq({
+              "$schema" => "http://json-schema.org/draft-06/schema#",
+              "description" => "",
+              "properties" => {
+                "annotations" => {
+                  "description"=>"Additional annotations",
+                  "type" => "object"
+                },
+                "branch" => {
+                  "description" => "Policy branch to apply this policy into",
+                  "type" => "string"
+                },
+                "id" => {
+                  "description" => "Resource Identifier",
+                  "type" => "string"
+                },
+                "foo" => {
+                  "description" => "",
+                  "type" => "string"
+                }
+              },
+              "required" => ["branch", "id", "foo"],
+              "title" => "",
+              "type" => "object"
+            })
+          end
+        end
+        context 'when it has a description' do
+          let(:configuration) do
+            { policy_template_variables: {foo: { description: 'foo-bar' }} }.to_json
+          end
+          it 'generates a schema with the defined variable' do
+            expect(subject['schema']).to eq({
+              "$schema" => "http://json-schema.org/draft-06/schema#",
+              "description" => "",
+              "properties" => {
+                "annotations" => {
+                  "description"=>"Additional annotations",
+                  "type" => "object"
+                },
+                "branch" => {
+                  "description" => "Policy branch to apply this policy into",
+                  "type" => "string"
+                },
+                "id" => {
+                  "description" => "Resource Identifier",
+                  "type" => "string"
+                },
+                "foo" => {
+                  "description" => "foo-bar",
+                  "type" => "string"
+                }
+              },
+              "required" => ["branch", "id"],
+              "title" => "",
+              "type" => "object"
+            })
+          end
+        end
+        context 'when it has a defined set of options' do
+          let(:configuration) do
+            { policy_template_variables: {foo: { valid_values: %w[foo bar] }} }.to_json
+          end
+          it 'generates a schema with the defined variable' do
+            expect(subject['schema']).to eq({
+              "$schema" => "http://json-schema.org/draft-06/schema#",
+              "description" => "",
+              "properties" => {
+                "annotations" => {
+                  "description"=>"Additional annotations",
+                  "type" => "object"
+                },
+                "branch" => {
+                  "description" => "Policy branch to apply this policy into",
+                  "type" => "string"
+                },
+                "id" => {
+                  "description" => "Resource Identifier",
+                  "type" => "string"
+                },
+                "foo" => {
+                  "description" => "",
+                  "type" => "string",
+                  "enum" => ["foo", "bar"]
+                }
+              },
+              "required" => ["branch", "id"],
+              "title" => "",
+              "type" => "object"
+            })
+          end
+        end
+        context 'when it has a default value' do
+          let(:configuration) do
+            { policy_template_variables: {foo: { default: 'foo-bar-baz' }} }.to_json
+          end
+          it 'generates a schema with the defined variable' do
+            expect(subject['schema']).to eq({
+              "$schema" => "http://json-schema.org/draft-06/schema#",
+              "description" => "",
+              "properties" => {
+                "annotations" => {
+                  "description"=>"Additional annotations",
+                  "type" => "object"
+                },
+                "branch" => {
+                  "description" => "Policy branch to apply this policy into",
+                  "type" => "string"
+                },
+                "id" => {
+                  "description" => "Resource Identifier",
+                  "type" => "string"
+                },
+                "foo" => {
+                  "description" => "",
+                  "type" => "string",
+                  "default" => "foo-bar-baz"
+                }
+              },
+              "required" => ["branch", "id"],
+              "title" => "",
+              "type" => "object"
+            })
+          end
+        end
+      end
     end
-    # context 'for factories with variables' do
-    #   let(:name) { 'api' }
-    #   let(:classification) { 'connection' }
+    context 'when variables are defined' do
+      let(:configuration) do
+        { variables: {foo: { }} }.to_json
+      end
+      it 'generates a policy with a minimum policy template' do
+        test_policy = <<~POLICY
+          - !policy
+            id: <%= id %>
+            annotations:
+          <% annotations.each do |key, value| -%>
+              <%= key %>: <%= value %>
+          <% end -%>
 
-    #   context 'when policy_type template is defined' do
-    #     let(:configuration) do
-    #       <<~CONFIG
-    #         {
-    #           "title": "API Connection Template",
-    #           "description": "All information for connecting to an API",
-    #           "policy_type": "variable-set",
-    #           "variables": {
-    #             "url": {
-    #               "required": true,
-    #               "description": "API Service URL"
-    #             },
-    #             "key": {
-    #               "required": true,
-    #               "description": "API Service Key"
-    #             }
-    #           }
-    #         }
-    #       CONFIG
-    #     end
-    #     it 'return the expected schema' do
-    #       test_policy = <<~POLICY
-    #           - !policy
-    #             id: <%= id %>
-    #             annotations:
-    #           <% annotations.each do |key, value| -%>
-    #               <%= key %>: <%= value %>
-    #           <% end -%>
+            body:
+            - &variables
+              - !variable foo
+        POLICY
+        expect(decoded_policy_template(subject['policy'])).to eq(test_policy)
+      end
+      it 'generates a schema with the defined variable' do
+        expect(subject['schema']).to eq({
+          "$schema" => "http://json-schema.org/draft-06/schema#",
+          "description" => "",
+          "properties" => {
+            "annotations" => {
+              "description"=>"Additional annotations",
+              "type" => "object"
+            },
+            "branch" => {
+              "description" => "Policy branch to apply this policy into",
+              "type" => "string"
+            },
+            "id" => {
+              "description" => "Resource Identifier",
+              "type" => "string"
+            },
+            "variables" => {
+              "type" => "object",
+              "properties" => {
+                "foo" => {
+                  "description" => "",
+                  "type" => "string"
+                }
+              },
+              "required" => []
+            }
+          },
+          "required" => ["branch", "id", "variables"],
+          "title" => "",
+          "type" => "object"
+        })
+      end
+      context 'when a variable group is not required' do
+        let(:configuration) do
+          { with_variable_group: false, variables: {foo: { }} }.to_json
+        end
+        it 'generates a policy with a minimum policy template' do
+          test_policy = <<~POLICY
+            - !policy
+              id: <%= id %>
+              annotations:
+            <% annotations.each do |key, value| -%>
+                <%= key %>: <%= value %>
+            <% end -%>
 
-    #             body:
-    #             - &variables
-    #               - !variable url
-    #               - !variable key
+              body:
+              - !variable foo
+          POLICY
+          expect(decoded_policy_template(subject['policy'])).to eq(test_policy)
+        end
 
-    #             - !group
-    #               id: consumers
-    #               annotations:
-    #                 description: "Roles that can see and retrieve credentials."
-    #             - !group
-    #               id: administrators
-    #               annotations:
-    #                 description: "Roles that can update credentials."
-    #             - !group
-    #               id: circuit-breaker
-    #               annotations:
-    #                 description: Provides a mechanism for breaking access to this authenticator.
-    #                 editable: true
-    #             # Allows 'consumers' group to be cut in case of compromise
-    #             - !grant
-    #               member: !group consumers
-    #               role: !group circuit-breaker
-    #             # Administrators also has the consumers role
-    #             - !grant
-    #               member: !group administrators
-    #               role: !group consumers
-    #             # Consumers (via the circuit-breaker group) can read and execute
-    #             - !permit
-    #               resource: *variables
-    #               privileges: [ read, execute ]
-    #               role: !group circuit-breaker
-    #             # Administrators can update (they have read and execute via the consumers group)
-    #             - !permit
-    #               resource: *variables
-    #               privileges: [ update ]
-    #               role: !group administrators
-    #         POLICY
+      end
+      context 'when it has a description' do
+        let(:configuration) do
+          { variables: { foo: { description: 'this is foo' }}}.to_json
+        end
+        it 'generates a schema with the defined variable' do
+          expect(subject['schema']).to eq({
+            "$schema" => "http://json-schema.org/draft-06/schema#",
+            "description" => "",
+            "properties" => {
+              "annotations" => {
+                "description"=>"Additional annotations",
+                "type" => "object"
+              },
+              "branch" => {
+                "description" => "Policy branch to apply this policy into",
+                "type" => "string"
+              },
+              "id" => {
+                "description" => "Resource Identifier",
+                "type" => "string"
+              },
+              "variables" => {
+                "type" => "object",
+                "properties" => {
+                  "foo" => {
+                    "description" => "this is foo",
+                    "type" => "string"
+                  }
+                },
+                "required" => []
+              }
+            },
+            "required" => ["branch", "id", "variables"],
+            "title" => "",
+            "type" => "object"
+          })
+        end
+      end
+      context 'when it is required' do
+        let(:configuration) do
+          { variables: {foo: { required: true }} }.to_json
+        end
+        it 'generates a schema with the defined variable' do
+          expect(subject['schema']).to eq({
+            "$schema" => "http://json-schema.org/draft-06/schema#",
+            "description" => "",
+            "properties" => {
+              "annotations" => {
+                "description"=>"Additional annotations",
+                "type" => "object"
+              },
+              "branch" => {
+                "description" => "Policy branch to apply this policy into",
+                "type" => "string"
+              },
+              "id" => {
+                "description" => "Resource Identifier",
+                "type" => "string"
+              },
+              "variables" => {
+                "type" => "object",
+                "properties" => {
+                  "foo" => {
+                    "description" => "",
+                    "type" => "string"
+                  }
+                },
+                "required" => ["foo"]
+              }
+            },
+            "required" => ["branch", "id", "variables"],
+            "title" => "",
+            "type" => "object"
+          })
+        end
+      end
+      context 'when it has a defined set of options' do
+        let(:configuration) do
+          { variables: {foo: { valid_values: %w[foo bar] }} }.to_json
+        end
+        it 'generates a schema with the defined variable' do
+          expect(subject['schema']).to eq({
+            "$schema" => "http://json-schema.org/draft-06/schema#",
+            "description" => "",
+            "properties" => {
+              "annotations" => {
+                "description"=>"Additional annotations",
+                "type" => "object"
+              },
+              "branch" => {
+                "description" => "Policy branch to apply this policy into",
+                "type" => "string"
+              },
+              "id" => {
+                "description" => "Resource Identifier",
+                "type" => "string"
+              },
+              "variables" => {
+                "type" => "object",
+                "properties" => {
+                  "foo" => {
+                    "description" => "",
+                    "type" => "string",
+                    "enum" => ["foo", "bar"]
+                  }
+                },
+                "required" => []
+              }
+            },
+            "required" => ["branch", "id", "variables"],
+            "title" => "",
+            "type" => "object"
+          })
+        end
+      end
+      context 'when it has a default value' do
+        let(:configuration) do
+          { variables: {foo: { default: 'foo-bar' }} }.to_json
+        end
+        it 'generates a schema with the defined variable' do
+          expect(subject['schema']).to eq({
+            "$schema" => "http://json-schema.org/draft-06/schema#",
+            "description" => "",
+            "properties" => {
+              "annotations" => {
+                "description"=>"Additional annotations",
+                "type" => "object"
+              },
+              "branch" => {
+                "description" => "Policy branch to apply this policy into",
+                "type" => "string"
+              },
+              "id" => {
+                "description" => "Resource Identifier",
+                "type" => "string"
+              },
+              "variables" => {
+                "type" => "object",
+                "properties" => {
+                  "foo" => {
+                    "description" => "",
+                    "type" => "string",
+                    "default" => "foo-bar"
+                  }
+                },
+                "required" => []
+              }
+            },
+            "required" => ["branch", "id", "variables"],
+            "title" => "",
+            "type" => "object"
+          })
+        end
+      end
+    end
+    context 'when a default template is provided' do
+      let(:configuration) do
+        { policy_type: 'variable-set' }.to_json
+      end
+      it 'generates a policy with a referenced policy template' do
+        test_policy = <<~POLICY
+          - !policy
+            id: <%= id %>
+            annotations:
+          <% annotations.each do |key, value| -%>
+              <%= key %>: <%= value %>
+          <% end -%>
 
-    #       factory = subject
-    #       expect(factory['version']).to eq('v1')
-    #       decoded_factory = Base64.decode64(factory['policy']).encode('UTF-8')
-    #       expect(decoded_factory).to eq(test_policy.strip)
-    #       expect(factory['policy_branch']).to eq('<%= branch %>')
-    #       expect(factory['schema']).to eq({
-    #         "$schema"=>"http://json-schema.org/draft-06/schema#",
-    #         "title"=>"API Connection Template",
-    #         "description"=>"All information for connecting to an API",
-    #         "type"=>"object",
-    #         "properties"=> {
-    #           "id" =>{ "description"=>"Resource Identifier", "type"=>"string" },
-    #           "annotations" => { "description"=>"Additional annotations", "type"=>"object" },
-    #           "branch" => { "description" => "Policy branch to apply this policy into", "type"=>"string" },
-    #           "variables" => {
-    #             "type"=>"object",
-    #             "properties"=> {
-    #               "url" => {
-    #                 "description" => "API Service URL",
-    #                 "type"=>"string"
-    #               },
-    #               "key" => {
-    #                 "description" => "API Service Key",
-    #                 "type"=>"string"
-    #               }
-    #             },
-    #             "required"=>["url", "key"]
-    #           }
-    #         },
-    #         "required" => [ "branch", "id", "variables" ]
-    #       })
-    #     end
-    #   end
-    # end
+            body:
+            - !group
+              id: consumers
+              annotations:
+                description: "Roles that can see and retrieve credentials."
+            - !group
+              id: administrators
+              annotations:
+                description: "Roles that can update credentials."
+            - !group
+              id: circuit-breaker
+              annotations:
+                description: Provides a mechanism for breaking access to this authenticator.
+                editable: true
+            # Allows 'consumers' group to be cut in case of compromise
+            - !grant
+              member: !group consumers
+              role: !group circuit-breaker
+            # Administrators also has the consumers role
+            - !grant
+              member: !group administrators
+              role: !group consumers
+            # Consumers (via the circuit-breaker group) can read and execute
+            - !permit
+              resource: *variables
+              privileges: [ read, execute ]
+              role: !group circuit-breaker
+            # Administrators can update (they have read and execute via the consumers group)
+            - !permit
+              resource: *variables
+              privileges: [ update ]
+              role: !group administrators
+        POLICY
+        expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+      end
+      context 'when a non-existing template is provided' do
+        let(:configuration) do
+          { policy_type: 'fake-template' }.to_json
+        end
+        it 'generates a policy without the referenced policy template' do
+          test_policy = <<~POLICY
+            - !policy
+              id: <%= id %>
+              annotations:
+            <% annotations.each do |key, value| -%>
+                <%= key %>: <%= value %>
+            <% end -%>
+          POLICY
+          expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+        end
+      end
+      context 'when variables are defined' do
+        let(:configuration) do
+          { policy_type: 'variable-set', variables: { foo: {} }}.to_json
+        end
+        it 'generates a policy with a referenced policy template' do
+          test_policy = <<~POLICY
+            - !policy
+              id: <%= id %>
+              annotations:
+            <% annotations.each do |key, value| -%>
+                <%= key %>: <%= value %>
+            <% end -%>
+
+              body:
+              - &variables
+                - !variable foo
+
+              - !group
+                id: consumers
+                annotations:
+                  description: "Roles that can see and retrieve credentials."
+              - !group
+                id: administrators
+                annotations:
+                  description: "Roles that can update credentials."
+              - !group
+                id: circuit-breaker
+                annotations:
+                  description: Provides a mechanism for breaking access to this authenticator.
+                  editable: true
+              # Allows 'consumers' group to be cut in case of compromise
+              - !grant
+                member: !group consumers
+                role: !group circuit-breaker
+              # Administrators also has the consumers role
+              - !grant
+                member: !group administrators
+                role: !group consumers
+              # Consumers (via the circuit-breaker group) can read and execute
+              - !permit
+                resource: *variables
+                privileges: [ read, execute ]
+                role: !group circuit-breaker
+              # Administrators can update (they have read and execute via the consumers group)
+              - !permit
+                resource: *variables
+                privileges: [ update ]
+                role: !group administrators
+          POLICY
+          expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+        end
+      end
+    end
   end
 end
