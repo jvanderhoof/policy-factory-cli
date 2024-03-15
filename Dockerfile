@@ -8,7 +8,8 @@ RUN mkdir -p $INSTALL_PATH
 COPY Gemfile Gemfile.lock ./
 RUN gem install rails bundler:2.5
 
-RUN bundle
+RUN bundle install
+# --without development test
 
 WORKDIR $INSTALL_PATH
 
