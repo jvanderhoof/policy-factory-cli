@@ -1,0 +1,6 @@
+{
+  "title": "Authn-AWS Template",
+  "description": "Create a new Authn-AWS authenticator",
+  "default_policy_branch": "conjur/authn-iam",
+  "policy_type": "authenticator"
+}

@@ -1,4 +1,3 @@
-
 # frozen_string_literal: true
 
 require 'spec_helper'
@@ -697,52 +696,103 @@ describe(Compiler::GenerateFactory) do
       end
     end
     context 'when a default template is provided' do
-      let(:configuration) do
-        { policy_type: 'variable-set' }.to_json
-      end
-      it 'generates a policy with a referenced policy template' do
-        test_policy = <<~POLICY
-          - !policy
-            id: <%= id %>
-            annotations:
-          <% annotations.each do |key, value| -%>
-              <%= key %>: <%= value %>
-          <% end -%>
+      context 'when the default template is a variable set' do
+        let(:configuration) do
+          { policy_type: 'variable-set' }.to_json
+        end
+        it 'generates a policy with a referenced policy template' do
+          test_policy = <<~POLICY
+            - !policy
+              id: <%= id %>
+              annotations:
+            <% annotations.each do |key, value| -%>
+                <%= key %>: <%= value %>
+            <% end -%>
 
-            body:
-            - !group
-              id: consumers
+              body:
+              - !group
+                id: consumers
+                annotations:
+                  description: "Roles that can see and retrieve credentials."
+              - !group
+                id: administrators
+                annotations:
+                  description: "Roles that can update credentials."
+              - !group
+                id: circuit-breaker
+                annotations:
+                  description: Provides a mechanism for breaking access to this authenticator.
+                  editable: true
+              # Allows 'consumers' group to be cut in case of compromise
+              - !grant
+                member: !group consumers
+                role: !group circuit-breaker
+              # Administrators also has the consumers role
+              - !grant
+                member: !group administrators
+                role: !group consumers
+              # Consumers (via the circuit-breaker group) can read and execute
+              - !permit
+                resource: *variables
+                privileges: [ read, execute ]
+                role: !group circuit-breaker
+              # Administrators can update (they have read and execute via the consumers group)
+              - !permit
+                resource: *variables
+                privileges: [ update ]
+                role: !group administrators
+          POLICY
+          expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+        end
+      end
+      context 'when the default template is an authenticator' do
+        let(:configuration) do
+          { policy_type: 'authenticator' }.to_json
+        end
+        it 'generates a policy with a referenced policy template' do
+          test_policy = <<~POLICY
+            - !policy
+              id: <%= id %>
               annotations:
-                description: "Roles that can see and retrieve credentials."
-            - !group
-              id: administrators
-              annotations:
-                description: "Roles that can update credentials."
-            - !group
-              id: circuit-breaker
-              annotations:
-                description: Provides a mechanism for breaking access to this authenticator.
-                editable: true
-            # Allows 'consumers' group to be cut in case of compromise
-            - !grant
-              member: !group consumers
-              role: !group circuit-breaker
-            # Administrators also has the consumers role
-            - !grant
-              member: !group administrators
-              role: !group consumers
-            # Consumers (via the circuit-breaker group) can read and execute
-            - !permit
-              resource: *variables
-              privileges: [ read, execute ]
-              role: !group circuit-breaker
-            # Administrators can update (they have read and execute via the consumers group)
-            - !permit
-              resource: *variables
-              privileges: [ update ]
-              role: !group administrators
-        POLICY
-        expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+            <% annotations.each do |key, value| -%>
+                <%= key %>: <%= value %>
+            <% end -%>
+
+              body:
+              - !webservice
+              - !group
+                id: circuit-breaker
+                annotations:
+                  description: Provides a mechanism for breaking access to this authenticator.
+              - !group
+                id: authenticatable
+                annotations:
+                  description: "Roles that can authenticate using this authenticator."
+              # Allows 'authenticatable' group to be cut in case of compromise
+              - !grant
+                member: !group authenticatable
+                role: !group circuit-breaker
+              # Roles (via the circuit-breaker group) can authenticate
+              - !permit
+                role: !group circuit-breaker
+                privilege: [ read, authenticate ]
+                resource: !webservice
+              # Enables Authenticator Status checking/troubleshooting
+              - !webservice
+                id: status
+                annotations:
+                  description: Web service for checking authenticator status
+              - !group
+                id: operators
+                annotations:
+                  description: Group with permission to check the authenticator status
+              - !permit
+                role: !group operators
+                privilege: [ read ]
+                resource: !webservice status
+          POLICY
+          expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+        end
       end
       context 'when a non-existing template is provided' do
         let(:configuration) do

@@ -9,7 +9,7 @@
       "description": "The resource for a set of JSON-encoded public keys, one of which corresponds to the key used to digitally sign the JWT. The keys must be encoded as a JWK Set (RFC7517)."
     },
     "ca-cert": {
-      "description": "CA certificate used to verify the JWT signature"
+      "description": "CA certificate used to connect to the JWKS endpoint"
     },
     "token-app-property": {
       "required": true,
