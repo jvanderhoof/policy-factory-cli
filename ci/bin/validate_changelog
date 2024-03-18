@@ -1,0 +1,6 @@
+#!/bin/bash -ex
+
+docker run --rm -v "$PWD":/app ruby:3.2 bash -ec "
+  gem install parse_a_changelog
+  parse /app/CHANGELOG.md
+"

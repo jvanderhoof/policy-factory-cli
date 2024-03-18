@@ -2,18 +2,69 @@
 
 image=policy-factory-builder:v0.0.1
 
+
+function print_help {
+  cat << EOF
+
+Runs the test suite for the Policy Factory CLI.
+
+Usage: bin/test [options]
+
+    -h, --help        Shows this help message.
+
+    -c, --console     Opens in a shell. Helpful for development and debugging.
+
+EOF
+  exit
+}
+
+function open_console {
+  docker run \
+    --network host \
+    --volume "$PWD:/opt/app/" \
+    --rm \
+    --tty \
+    --interactive \
+    $image /bin/bash
+
+  exit
+}
+
+function run_tests {
+  docker run \
+    --network host \
+    --volume "$PWD:/opt/app/" \
+    --rm \
+    --tty \
+    --interactive \
+    $image rspec \
+      --format progress \
+      --format RspecJunitFormatter \
+      --out spec/reports/results.xml
+}
+
 # Only build if the image isn't present locally
 if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
   docker build -t $image .
 fi
 
-docker run \
-  --network host \
-  --volume "$PWD:/opt/app/" \
-  --rm \
-  --tty \
-  --interactive \
-  $image /bin/bash
+# docker run \
+#   --network host \
+#   --volume "$PWD:/opt/app/" \
+#   --rm \
+#   --tty \
+#   --interactive \
+#   $image /bin/bash
   # $image bundle exec rspec
 
   # rake policy_factory:inspect[$path]
+
+while true ; do
+  case "$1" in
+    -h | --help ) print_help ;;
+    -c | --console ) open_console ;;
+    * ) if [ -z "$1" ]; then break; else echo "$1 is not a valid option"; exit 1; fi;;
+  esac
+done
+
+run_tests

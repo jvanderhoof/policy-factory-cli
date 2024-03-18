@@ -51,6 +51,8 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.13.0)
     rspec-support (3.13.1)
+    rspec_junit_formatter (0.6.0)
+      rspec-core (>= 2, < 4, != 2.12.0)
     simplecov (0.22.0)
       docile (~> 1.1)
       simplecov-html (~> 0.11)
@@ -70,6 +72,7 @@ DEPENDENCIES
   conjur-api
   pry
   rspec
+  rspec_junit_formatter
   simplecov
 
 BUNDLED WITH

@@ -2,7 +2,7 @@
 
 image=policy-factory-builder:v0.0.1
 
-function _print_help {
+function print_help {
   cat << EOF
 
 A tool that generates Policy Factory starting templates.
@@ -40,7 +40,7 @@ classification='default'
 
 while true ; do
   case "$1" in
-    -h | --help ) _print_help ;;
+    -h | --help ) print_help ;;
     -v | --version ) shift; version="$1" ; shift ;;
     -c | --classification ) shift; classification="$1" ; shift ;;
     * ) name="$1" ; break ;;
