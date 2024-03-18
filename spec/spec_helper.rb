@@ -9,3 +9,5 @@ require 'simplecov'
 SimpleCov.start do
   enable_coverage :branch
 end
+
+Dir.mkdir('spec/reports') unless File.directory?('spec/reports')
