@@ -1,0 +1,19 @@
+#!/bin/bash -e
+
+image=policy-factory-builder:v0.0.1
+
+# Only build if the image isn't present locally
+if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
+  docker build -t $image .
+fi
+
+docker run \
+  --network host \
+  --volume "$PWD:/opt/app/" \
+  --rm \
+  --tty \
+  --interactive \
+  $image /bin/bash
+  # $image bundle exec rspec
+
+  # rake policy_factory:inspect[$path]

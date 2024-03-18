@@ -1,0 +1,15 @@
+{
+  "title": "API Credentials Template",
+  "description": "Data related to external APIs",
+  "policy_type": "variable-set",
+  "variables": {
+    "url": {
+      "required": true,
+      "description": "API URL"
+    },
+    "api-key": {
+      "required": true,
+      "description": "API authentication key"
+    }
+  }
+}

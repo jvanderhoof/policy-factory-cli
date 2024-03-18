@@ -7,17 +7,35 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.0.0] - 2024-03-05
+
+### Added
+
+  - Ability to load Factories using a Conjur Auth Token using the `CONJUR_AUTH_TOKEN`
+    environment variable
+  - Ability to define the target Policy branch using `TARGET_POLICY` environment
+    variable.
+  - Factory DSL Changes:
+    - Support for variable-set and authenticator boilerplate policy.
+    - Support for dropping the Factory resource identifier (for non-resource Factories).
+    - Support for dropping the Factory annotations (for non-resource Factories).
+    - Support for setting default values.
+    - Support for defining permitted values.
+  - Additional Default Factories:
+    - Core: Delete, Deny, Grant, Layer, Permit, Revoke, and Webservice
+    - Authenticators: Authn-Azure, Authn-GCP
+
 ## [0.3.0] - 2024-01-18
 
 ### Added
 
-- Core Factories: Host, User, Policy, Group, User, and Grant
+- Core Factories: Host, User, Policy, Group, and User.
 
 ## [0.2.0] - 2024-01-18
 
 ### Added
 
-- Adds preliminary support for variables
+- Adds preliminary support for variables.
 
 ## [0.1.0] - 2023-09-22
 

@@ -1,0 +1,6 @@
+{
+  "title": "Authn-GCP Template",
+  "description": "Create a new Authn-GCP authenticator",
+  "default_policy_branch": "conjur/authn-gcp",
+  "policy_type": "authenticator"
+}

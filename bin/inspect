@@ -1,0 +1,44 @@
+#!/bin/bash -e
+
+image=policy-factory-builder:v0.0.1
+
+function _print_help {
+  cat << EOF
+
+A tool that shows the JSON Schema and corresponding Policy generated and loaded into Conjur.
+
+Synopsis: bin/inspect [command options] <factory-path>
+
+Usage: bin/inspect [options] <factory-path>:
+
+    -h, --help                  Shows this help message.
+
+EOF
+  exit
+}
+
+run() {
+  local path="$1"
+
+  # Only build if the image isn't present locally
+  if [[ "$(docker images -q $image 2> /dev/null)" == "" ]]; then
+    docker build -t $image .
+  fi
+
+  docker run \
+    --network host \
+    --volume "$PWD:/opt/app/" \
+    --rm \
+    --tty \
+    --interactive \
+    $image rake policy_factory:inspect[$path]
+}
+
+while true ; do
+  case "$1" in
+    -h | --help ) _print_help ;;
+    * ) path="$1" ; break ;;
+  esac
+done
+
+run "$path"

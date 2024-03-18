@@ -1,0 +1,12 @@
+{
+  "title": "Authn-Azure Template",
+  "description": "Create a new Authn-Azure Authenticator",
+  "default_policy_branch": "conjur/authn-azure",
+  "policy_type": "authenticator",
+  "variables": {
+    "provider-uri": {
+      "required": true,
+      "description": "Provider URI"
+    }
+  }
+}
