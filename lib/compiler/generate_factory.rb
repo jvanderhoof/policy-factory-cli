@@ -11,24 +11,32 @@ module Compiler
     end
 
     def generate(policy_template:, configuration:)
-      configuration = merge_with_default_configuration(configuration)
-      if policy_template.nil? && configuration['policy_type'].present?
-        if File.exist?("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
-          policy_template = File.read("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
-        else
-          policy_template = ''
+      # If the configuration is a collection of factories, generate the collection
+      if configuration.key?('factories')
+        create_factory_collections(
+          factories: configuration['factories'],
+          schema: generate_schema(configuration: configuration)
+        )
+      else
+        configuration = merge_with_default_configuration(configuration)
+        if policy_template.nil? && configuration['policy_type'].present?
+          if File.exist?("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
+            policy_template = File.read("lib/compiler/policy_types/#{configuration['policy_type'].underscore}.yml")
+          else
+            policy_template = ''
+          end
         end
+        schema = generate_schema(configuration: configuration)
+        factory_policy_template = generate_policy_template(
+          configuration: configuration,
+          policy_template: policy_template
+        )
+        create_factory(
+          schema: schema,
+          policy_template: factory_policy_template,
+          configuration: configuration
+        )
       end
-      schema = generate_schema(configuration: configuration)
-      factory_policy_template = generate_policy_template(
-        configuration: configuration,
-        policy_template: policy_template
-      )
-      create_factory(
-        schema: schema,
-        policy_template: factory_policy_template,
-        configuration: configuration
-      )
     end
 
     private
@@ -59,6 +67,16 @@ module Compiler
           version: @version,
           policy: Base64.strict_encode64(policy_template.to_s),
           policy_branch: default_policy_branch(configuration),
+          schema: schema
+        }.to_json
+      )
+    end
+
+    def create_factory_collections(schema:, factories:)
+      Base64.strict_encode64(
+        {
+          version: @version,
+          factories: factories,
           schema: schema
         }.to_json
       )
