@@ -1,6 +1,6 @@
 # Factory Policy Reference
 
-Policy Factory `policy.yml` files are processed through Ruby's [ERB templating engine](https://docs.ruby-lang.org/en/3.2/ERB.html).  This allows us to create more dynamic policy.
+Policy Factory `policy.yml` files are processed through the [Mustache templating library](https://mustache.github.io/mustache.5.html).  This allows us to create more dynamic policy.
 
 ## Variable Substitution
 
@@ -8,39 +8,37 @@ The following is an example of how to use variables in the `policy.yml` file:
 
 ```yml
 - !group
-  id: <%= id %>
+  id: {{ id }}
   annotations:
     factory: core/v1/group
 ```
 
-The tag `<%= my_variable %>` performs string interpolation, writing the value of `my_variable` to the rendered policy file.
+The tag `{{ my_variable }}` performs string interpolation, writing the value of `my_variable` to the rendered policy file.
 
 ## Basic Logic
 
-The tags `<% -%>` allow templates to arbitrarily execute Ruby code within a template. This is helpful for performing simple logic.  For example, to optionally print the owner only if both the owner role and owner type are present:
+Looping and "if" logic can be applied using the list tags: `{{# }}` and `{{/ }}`.
 
-```yml
-- !group
-  id: <%= id %>
-<% if defined?(owner_role) && defined?(owner_type) -%>
-  owner: !<%= owner_type %> <%= owner_role %>
-<% end -%>
-  annotations:
-    factory: core/v1/group
+### "If" Logic
+
+Print if the `my_value` is set:
+
+```
+{{# my_value }}
+  {{ my_value }}
+{{/ my_value }}
 ```
 
-*Note: the dash in the closing tag `-%>` means the line will be completely ignored when rendered.  Without the dash, the template will render with a newline after this template is rendered.*
+### Render Hash/Dictionary
 
-## Looping
 
-Annotations are a special input.  They are a hash (or dictionary for those more familiar with Python). The following is an example of how one would loop through annotations, printing keys and values:
+Hash/Dictionary values are key/value pairs. Conjur Factories offer a small extension to the default Mustache behavior to simplify
+rendering hashes like Annotations. When the variable is a hash, its key will be assigned the variable name `key`, and the value
+assigned the variable name `value`. This allows us to render a hash with the following:
 
-```yml
-- !group
-  id: <%= id %>
-  annotations:
-    factory: core/v1/group
-<% annotations.each do |key, value| -%>
-    <%= key %>: <%= value %>
-<% end -%>
+```
+{{# annotations }}
+  {{ key }}: {{ value }}
+{{/ annotations }}
+
 ```

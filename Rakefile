@@ -3,11 +3,22 @@
 require 'bundler'
 require 'base64'
 require 'json'
+require 'logger'
 
 Bundler.require
 
 require 'fileutils'
 require './lib/compiler/generate_factory'
+
+def logger
+  @logger ||= begin
+    logger = Logger.new(STDOUT)
+    log_level = ENV.fetch('LOG_LEVEL', 'warn')
+    log_level = ENV.fetch('LOG_LEVEL', 'info')
+    logger.level = Object.const_get("Logger::#{log_level.upcase}")
+    logger
+  end
+end
 
 def available_templates(files)
   {}.tap do |templates|
@@ -65,11 +76,18 @@ end
 
 def client
   @client ||= begin
+    conjur_url = ENV.fetch('CONJUR_URL', 'https://localhost')
+    run_as_secure = ENV.fetch('INSECURE', 'false') == 'false'
+
+    if run_as_secure && URI(conjur_url).scheme != 'https'
+      raise Exception.new('Conjur URL must be `https` unless the --insecure flag is present.')
+    end
+
     Conjur.configuration.rest_client_options = {
-      verify_ssl: false
+      verify_ssl: run_as_secure
     }
     Conjur.configuration.account = account
-    Conjur.configuration.appliance_url = ENV.fetch('CONJUR_URL', 'https://localhost')
+    Conjur.configuration.appliance_url = conjur_url
     if ENV['CONJUR_AUTH_TOKEN'].present?
       Conjur::API.new_from_token(JSON.parse(Base64.decode64(ENV['CONJUR_AUTH_TOKEN'])))
     else
@@ -88,7 +106,7 @@ def create_factory(classification:, version:, name:)
   FileUtils.mkdir_p(target_directory)
 
   if File.exist?("#{target_directory}/policy.yml")
-    puts "File already exists: '#{target_directory}/policy.yml'"
+    logger.debug("File already exists: '#{target_directory}/policy.yml'")
   else
     File.open("#{target_directory}/policy.yml", 'w') do |file|
       file.write("# Place relevant Conjur Policy here.\n")
@@ -96,7 +114,7 @@ def create_factory(classification:, version:, name:)
   end
 
   if File.exist?("#{target_directory}/config.json")
-    puts "File already exists: '#{target_directory}/policy.yml'"
+    logger.debug("File already exists: '#{target_directory}/policy.yml'")
   else
     File.open("#{target_directory}/config.json", 'w') do |file|
       file.write(
@@ -114,7 +132,7 @@ def create_factory(classification:, version:, name:)
     end
   end
 
-  puts "Factory stubs generated in: '#{target_directory}'"
+  logger.info("Factory stubs generated in: '#{target_directory}'")
 end
 
 namespace :policy_factory do
@@ -140,46 +158,84 @@ namespace :policy_factory do
     factory = JSON.parse(Base64.decode64(compiled_factory))
     puts 'Factory Schema:'
     puts JSON.pretty_generate(factory)
+    if factory.key?('policy')
+      puts
+      puts 'Factory Policy:'
+      puts Base64.decode64(factory['policy'])
+    end
     puts
-    puts 'Factory Policy:'
-    puts Base64.decode64(factory['policy'])
+    puts "Compiled Factory:"
+    puts compiled_factory
+  end
+
+  def apply_base_factory_policy(target_policy:, templates:)
+    logger.info("Generated Base Template:")
+    logger.debug(generate_base_policy(policy_path: target_policy, templates: templates))
+    client.load_policy('root',  generate_base_policy(policy_path: target_policy, templates: templates))
+  end
+
+  def load_factory(factory:, version:, classification:, template_folder:, target_policy:)
+    factory_file_path = "factories/#{template_folder}/#{classification}/#{factory}/#{version}"
+    logger.info("  loading template from: '#{factory_file_path}'")
+    policy_template = File.exist?("#{factory_file_path}/policy.yml") ? File.read("#{factory_file_path}/policy.yml") : nil
+
+    compiled_factory = Compiler::GenerateFactory.new(
+        name: factory,
+        version: version,
+        classification: classification
+      ).generate(
+        policy_template: policy_template,
+        configuration: JSON.parse(File.read("#{factory_file_path}/config.json"))
+      )
+    logger.debug("  compiled factory: '#{compiled_factory}'")
+    variable = "#{account}:variable:#{target_policy}/#{classification}/#{version}/#{factory}"
+    logger.info("  into variable: '#{variable}'")
+    client.resource(variable).add_value(compiled_factory)
   end
 
   task :load do
     target_policy = ENV.fetch('TARGET_POLICY', 'conjur/factories')
-    template_folder = ENV.fetch('TEMPLATE_FOLDER', 'default')
-    templates = available_templates(Dir["#{Dir.pwd}/factories/#{template_folder}/**/*.json"])
+    if ENV.fetch('LOAD_ALL', 'false') == 'true'
+      template_folder = ENV.fetch('TEMPLATE_FOLDER', 'default')
+      templates = available_templates(Dir["#{Dir.pwd}/factories/#{template_folder}/**/*.json"])
 
-    if templates.empty?
-      puts "It looks like there are no templates in 'factories/#{template_folder}'"
-      exit
-    end
-    puts "Loading templates from 'factories/#{template_folder}'\n\n"
-    puts "Generated Base Template:"
-    puts generate_base_policy(policy_path: target_policy, templates: templates)
-    client.load_policy('root',  generate_base_policy(policy_path: target_policy, templates: templates))
-
-    templates.each do |classification, factories|
-      factories.each do |factory_version|
-        version, factory = factory_version.split('/')
-
-        factory_file_path = "factories/#{template_folder}/#{classification}/#{factory}/#{version}"
-        puts "  loading template from: '#{factory_file_path}'"
-        policy_template = File.exist?("#{factory_file_path}/policy.yml") ? File.read("#{factory_file_path}/policy.yml") : nil
-
-        compiled_factory = Compiler::GenerateFactory.new(
-            name: factory,
-            version: version,
-            classification: classification
-          ).generate(
-            policy_template: policy_template,
-            configuration: JSON.parse(File.read("#{factory_file_path}/config.json"))
-          )
-        puts "  compiled factory: '#{compiled_factory}'"
-        client.resource(
-          "#{account}:variable:#{target_policy}/#{classification}/#{version}/#{factory}"
-        ).add_value(compiled_factory)
+      if templates.empty?
+        logger.warn("It looks like there are no templates in 'factories/#{template_folder}'")
+        exit
       end
+      logger.info("Loading templates from 'factories/#{template_folder}'")
+
+      apply_base_factory_policy(target_policy: target_policy, templates: templates)
+
+      templates.each do |classification, factories|
+        factories.each do |factory_version|
+          version, factory = factory_version.split('/')
+
+          load_factory(
+            factory: factory,
+            version: version,
+            classification: classification,
+            template_folder: template_folder,
+            target_policy: target_policy
+          )
+        end
+      end
+    else
+      factory_path = ENV.fetch('FACTORY', '')
+      logger.info("loading factory: #{factory_path}")
+
+      _, template_folder, classification, factory, version = factory_path.split('/')
+
+      template = { classification => ["#{version}/#{factory}"] }
+      apply_base_factory_policy(target_policy: target_policy, templates: template)
+
+      load_factory(
+        factory: factory,
+        version: version,
+        classification: classification,
+        template_folder: template_folder,
+        target_policy: target_policy
+      )
     end
   end
 end

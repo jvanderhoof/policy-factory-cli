@@ -17,11 +17,11 @@ The following is a full set of valid configuration elements:
   // your factory policy does not require wrapping (ex. to create Conjur primatives
   // like a host or a user), set this to false.
   //
-  // Valid options are `true` and `false`. Defaults to `true`.
+  // Valid options are `true` and `false`. Defaults to `false`.
   //
-  // Note: Setting `wrap_with_policy` to false ignores the variables block below.
+  // Note: Setting `wrap-with-policy` to false ignores the variables block below.
   //
-  "wrap_with_policy": false,
+  "wrap-with-policy": true,
 
   // If all created resources should go into a particular policy branch, define that
   // policy branch here. If users are free to choose the destination policy, leave this
@@ -30,12 +30,12 @@ The following is a full set of valid configuration elements:
   // Note: if this is blank, the `branch` attribute will be required to create
   // resources with this factory.
   //
-  "default_policy_branch": "/conjur/authn-jwt",
+  "default-policy-branch": "/conjur/authn-jwt",
 
   // Policy Type definitions reduce the need to write boilerplate code for common resource
   // creation. Currently, this CLI includes support for `variable-sets` and `authenticator`.
   //
-  // When a policy_type is defined and a Factory does not have a `policy.yml` file, the policy
+  // When a policy-type is defined and a Factory does not have a `policy.yml` file, the policy
   // template can be defined. There are two types of templates available:
   //
   // 1. 'variable-set' - includes two groups:
@@ -47,16 +47,16 @@ The following is a full set of valid configuration elements:
   //     - Authenticatable group with read/authenticate permission on the Authenticator Webservice
   //     - Operators group with read permission on the Status webservice
   //
-  // Note: If a `policy.yml` file is present, it takes priority over the `policy_type` attribute.
-  "policy_type": "<template>",
+  // Note: If a `policy.yml` file is present, it takes priority over the `policy-type` attribute.
+  "policy-type": "<template>",
 
   // Factories automatically generate an "id" input. If your Factory does not require an ID (ex.
   // if creating a Factory that adds/removes roles or adds/removes permissions), remove the ID
   // with the following:
   //
-  // Valid options are `true` and `false`. Defaults to `true`.
+  // Valid options are `true` and `false`. Defaults to `false`.
   //
-  "include_identifier": false,
+  "include-identifier": false,
 
   // Factories automatically generate inputs for annotations. If your Factory does not
   // require annotations (for example, if creating a Factory that adds/removes roles or
@@ -64,7 +64,7 @@ The following is a full set of valid configuration elements:
   //
   // Valid options are `true` and `false`. Defaults to `true`.
   //
-  "include_annotations": false
+  "include-annotations": false
 
   // This section defines template variables which become available for use in the
   // `policy.yml` file.
@@ -72,7 +72,7 @@ The following is a full set of valid configuration elements:
   // Mark all required variables with the `required` attribute set to true.
   //
   // Note: Policy Template Variables must be Snake Case (foo_bar).
-  "policy_template_variables": {
+  "policy-template-variables": {
     "id": {
       "required": true,
       "description": "Group Identifier",
@@ -86,7 +86,7 @@ The following is a full set of valid configuration elements:
   //
   // Note: Variable names should be dasherized (foo-bar)
   //
-  // Note: Variables are only present if `wrap_with_policy` is set to `true`.
+  // Note: Variables are only present if `wrap-with-policy` is set to `true`.
   "variables": {
     "url": {
       "required": true,
@@ -102,7 +102,7 @@ The following is a full set of valid configuration elements:
 
 ### Variable Attributes
 
-In the above configuration, `policy_template_variables` and `variable` sets include the same
+In the above configuration, `policy-template-variables` and `variable` sets include the same
 set of valid attribute definitions.  They are as follows:
 
 ```js
@@ -123,6 +123,6 @@ set of valid attribute definitions.  They are as follows:
   // Limits inputs to the values listed in the array.
   //
   // Note: values are case sensitive
-  "valid_values": ["option-1", "option-2", ...]
+  "valid-values": ["option-1", "option-2", ...]
 }
 ```

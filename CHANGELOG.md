@@ -10,6 +10,19 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 - Nothing should go in this section, please add to the latest unreleased version
   (and update the corresponding date), or add a new version.
 
+## [2.0.0] - 2024-10-16
+### Added
+  - Support for defining a set of valid options.
+  - Support for hard-coding values which are not presented to the user.
+  - Adds support for loading a single Factory
+  - Insecure connections (no TLS and/or self-signed certificate) require the `--insecure` flag.
+  - Adds support for inspecting Factories via the CLI.
+
+### Changed
+  - Replaces ERB templating with Mustache.
+  - All configuration is now "dasherized" instead of underscore.
+  - Loading all Factories now requires the `--all <default/custom`.
+
 ## [1.0.0] - 2024-03-05
 ### Added
   - Ability to load Factories using a Conjur Auth Token using the `CONJUR_AUTH_TOKEN`

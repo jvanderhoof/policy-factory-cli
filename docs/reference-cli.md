@@ -74,7 +74,7 @@ Factory Schema:
 {
   "version": "v1",
   "policy": "LSAhaG9zdAogIGlkOiA8JT0gaWQgJT4KPCUgaWYgZGVmaW5lZD8ob3duZXJfcm9sZSkgJiYgZGVmaW5lZD8ob3duZXJfdHlwZSkgLSU+CiAgb3duZXI6ICE8JT0gb3duZXJfdHlwZSAlPiA8JT0gb3duZXJfcm9sZSAlPgo8JSBlbmQgLSU+CjwlIGlmIGRlZmluZWQ/KGlwX3JhbmdlKSAtJT4KICByZXN0cmljdGVkX3RvOiA8JT0gaXBfcmFuZ2UgJT4KPCUgZW5kIC0lPgogIGFubm90YXRpb25zOgo8JSBhbm5vdGF0aW9ucy5lYWNoIGRvIHxrZXksIHZhbHVlfCAtJT4KICAgIDwlPSBrZXkgJT46IDwlPSB2YWx1ZSAlPgo8JSBlbmQgLSU+Cg==",
-  "policy_branch": "<%= branch %>",
+  "policy_branch": "{{ branch }}",
   "schema": {
     "$schema": "http://json-schema.org/draft-06/schema#",
     "title": "Host Template",
@@ -115,17 +115,20 @@ Factory Schema:
 
 Factory Policy:
 - !host
-  id: <%= id %>
-<% if defined?(owner_role) && defined?(owner_type) -%>
-  owner: !<%= owner_type %> <%= owner_role %>
-<% end -%>
-<% if defined?(ip_range) -%>
-  restricted_to: <%= ip_range %>
-<% end -%>
+  id: {{ id }}
+{{# owner_role }}
+  {{# owner_type }}
+  owner: !{{ owner_type }} {{ owner_role }}
+  {{/ owner_type }}
+{{/ owner_role }}
+{{# ip_range }}
+  restricted_to: {{ ip_range }}
+{{/ ip_range }}
   annotations:
-<% annotations.each do |key, value| -%>
-    <%= key %>: <%= value %>
-<% end -%>
+    factory: core/v1/host
+  {{# annotations}}
+    {{ key }}: {{ value }}
+  {{/ annotations}}
 ```
 
 This is verbose, but gives some detail into the JSON Schema (used by Conjur's
@@ -163,6 +166,22 @@ There are a few key bits of information required to load Factories:
 
 *Note: The role used to load factories must have permission to add policy into the `root` namespace.*
 
+
+### Flags
+
+| Flag | Comments |
+|-|-|
+| `--all <default or custom>` | Loads all the locally available Factories |
+| `--insecure` | Skips the TLS check during the policy apply |
+
+### Loading a specific Factory
+
+```sh
+CONJUR_URL=https://<conjur-url> ACCOUNT=<account> CONJUR_USERNAME=<role> bin/load default/core/v1/host
+
+```
+
+
 ### Loading default Factories
 
 This CLI comes with a set of Policy Factories. These are intended to speed up the
@@ -172,21 +191,23 @@ to use.
 To load default Factories:
 
 ```sh
-CONJUR_URL=https://<conjur-url> ACCOUNT=<account> CONJUR_USERNAME=<role> bin/load default
+CONJUR_URL=https://<conjur-url> ACCOUNT=<account> CONJUR_USERNAME=<role> bin/load --all default
 ```
 
 ### Loading custom Factories
 
-By default, calling `bin/load` loads factories from `factories/custom`.
+To load custom Factories:
 
-*Note: This command loads ALL factories present in the `factories/custom`.*
+```sh
+bin/load --all custom
+```
 
 #### With a username/password
 
 This following is an example run against Conjur running via Conjur Intro:
 
 ```sh
-CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load
+CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load --all custom
 ```
 
 You'll be prompted for your password prior to performing the load.
@@ -196,7 +217,7 @@ You'll be prompted for your password prior to performing the load.
 Alternatively, a user can use a role's API key:
 
 ```sh
-API_KEY=21mjk4v31pbfr94zpzhbght4v5380zwd02hbjgj4t8geya1wqbhzj CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load
+API_KEY=21mjk4v31pbfr94zpzhbght4v5380zwd02hbjgj4t8geya1wqbhzj CONJUR_URL=https://localhost ACCOUNT=demo CONJUR_USERNAME=admin bin/load --all custom
 ```
 
 When using an API key, you will not be prompted for a password.
@@ -205,7 +226,7 @@ When using an API key, you will not be prompted for a password.
 
 ```sh
 auth_token='eyJwcm90ZWN0ZWQiOiJleUpoYkdjaU9pSmpiMjVxZFhJdWIzSm5MM05zYjNOcGJHOHZkaklpTENKcmFXUWlPaUkxT0dRME5qTm1OVE14Wm1Vd056QmtNMlJtT0RNNFlqTmxabU00T0dJM1pURTNNR00xWkdReE5qRmxOMkZsTmpaallqQXlNelptWWpBd1l6TTBZVEprSW4wPSIsInBheWxvYWQiOiJleUp6ZFdJaU9pSmhaRzFwYmlJc0ltVjRjQ0k2TVRjd09UWTJNekF6Tml3aWFXRjBJam94TnpBNU5qWXlOVFUyZlE9PSIsInNpZ25hdHVyZSI6Ik8xZlR3X2tQMTVCNVVhQUJXQ3EyeDJ2UnZmTUNoMEw2Z1I5elVXR2xwUU9jUm42RnNXQi1uZDAzNDEyeWpDM1dPalRBSnNnRXJHa1AzZE90VXZ4MUdjTnI3aFk0YVk3X1BjUXE1Y1Bya05KVmtIdUpCN3VqUFRQdTR2NWgxc2I3X2xVWGwyNGZUZDRYOWZZODRwSnhYbDRjRkNtaVJPUHJhYTVpbm5WUzl0WHBmbWtFUjE2dk10OHdJaFpvMFpCWGZTbXBhM285S0RhQWl2Wjc3U0VSaGxSYmVRZVBRRVBlTmU1bzgzN2NpMWlPYTlFRjF4TG1HYUM1ME5tS2FqOWltTGRzVjdMTHlCUDB4UkJqeGxvM01TQlRJRW45NW1lVnN5SWdwaEcyQm5sbXJUMk42RmFLQWdDcXVmS3JrR3dWbGliejBEcUpxSEVnMzNaR1ZSQ0FtSEpBblhDU1paVGNSXzZ3RHVpdzh6UXgxazBJd1JuN29MMG1zVmx0N2g3eCJ9'
-CONJUR_URL=http://localhost:3000 ACCOUNT=cucumber CONJUR_USERNAME=admin CONJUR_AUTH_TOKEN=$auth_token bin/load
+CONJUR_URL=http://localhost:3000 ACCOUNT=cucumber CONJUR_USERNAME=admin CONJUR_AUTH_TOKEN=$auth_token bin/load --all custom
 ```
 
 When using an Auth token, you will not be prompted for a password.

@@ -42,11 +42,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy with a minimum policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
           POLICY
           expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
         end
@@ -54,7 +54,7 @@ describe(Compiler::GenerateFactory) do
           expect(subject['version']).to eq('v1')
         end
         it 'generates a dynamic branch definition' do
-          expect(subject['policy_branch']).to eq('<%= branch %>')
+          expect(subject['policy_branch']).to eq('{{ branch }}')
         end
         it 'generates a policy with a minimum schema' do
           expect(subject['schema']).to eq({
@@ -109,11 +109,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy with a minimum policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
           POLICY
           expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
         end
@@ -260,11 +260,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy template without the identifier' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
           POLICY
           expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
         end
@@ -276,11 +276,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy with a minimum policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
           POLICY
           expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
         end
@@ -475,11 +475,11 @@ describe(Compiler::GenerateFactory) do
       it 'generates a policy with a minimum policy template' do
         test_policy = <<~POLICY
           - !policy
-            id: <%= id %>
+            id: {{ id }}
             annotations:
-          <% annotations.each do |key, value| -%>
-              <%= key %>: <%= value %>
-          <% end -%>
+            {{# annotations }}
+              {{ key }}: {{ value }}
+            {{/ annotations }}
 
             body:
             - &variables
@@ -522,16 +522,16 @@ describe(Compiler::GenerateFactory) do
       end
       context 'when a variable group is not required' do
         let(:configuration) do
-          { with_variable_group: false, variables: {foo: { }} }.to_json
+          { with_variables_group: false, variables: {foo: { }} }.to_json
         end
         it 'generates a policy with a minimum policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
 
               body:
               - !variable foo
@@ -703,11 +703,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy with a referenced policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
 
               body:
               - !group
@@ -752,11 +752,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy with a referenced policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
 
               body:
               - !webservice
@@ -801,11 +801,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy without the referenced policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
           POLICY
           expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
         end
@@ -817,11 +817,11 @@ describe(Compiler::GenerateFactory) do
         it 'generates a policy with a referenced policy template' do
           test_policy = <<~POLICY
             - !policy
-              id: <%= id %>
+              id: {{ id }}
               annotations:
-            <% annotations.each do |key, value| -%>
-                <%= key %>: <%= value %>
-            <% end -%>
+              {{# annotations }}
+                {{ key }}: {{ value }}
+              {{/ annotations }}
 
               body:
               - &variables
