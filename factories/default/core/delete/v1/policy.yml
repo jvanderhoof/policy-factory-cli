@@ -1,2 +1,2 @@
 - !delete
-  record: !<%= resource_type %> <%= resource_id %>
+  record: !{{ resource_type }} {{ resource_id }}
