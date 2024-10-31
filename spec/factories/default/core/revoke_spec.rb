@@ -44,8 +44,8 @@ describe('Factories::Default::Core::Revoke') do
       expect(policy_template).to eq(
         <<~POLICY
           - !revoke
-            member: !<%= member_resource_type %> <%= member_resource_id %>
-            role: !<%= role_resource_type %> <%= role_resource_id %>
+            member: !{{ member_resource_type }} {{ member_resource_id }}
+            role: !{{ role_resource_type }} {{ role_resource_id }}
         POLICY
       )
     end

@@ -4,6 +4,7 @@
   "with_variable_group": false,
   "variables": {
     "value": {
+      "title": "Value",
       "required": true,
       "description": "Variable value"
     }

@@ -49,9 +49,9 @@ describe('Factories::Default::Core::Permit') do
       expect(policy_template).to eq(
         <<~POLICY
           - !permit
-            role: !<%= role_type %> <%= role_id %>
-            resource: !<%= resource_type %> <%= resource_id %>
-            privileges: [<%= privileges %>]
+            role: !{{ role_type }} {{ role_id }}
+            resource: !{{ resource_type }} {{ resource_id }}
+            privileges: [{{ privileges }}]
         POLICY
       )
     end

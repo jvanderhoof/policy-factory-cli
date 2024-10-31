@@ -14,26 +14,28 @@ describe('Factories::Default::Connections::Database') do
           'description' => 'All information for connecting to a database',
           'policy_type' => 'variable-set',
           'variables' => {
-            'type' => {
+            'datatbase-type' => {
               'required' => true,
-              'description' => 'Database Type',
+              'description' => 'The type of database this connection is',
+              'title' => 'Type',
               'valid_values' => ['sqlserver', 'postgresql', 'mysql', 'oracle', 'db2', 'sqlite']
             },
             'url' => {
               'required' => true,
-              'description' => 'Database URL'
+              'title' => 'URL'
             },
             'port' => {
               'required' => true,
-              'description' => 'Database Port'
+              'title' => 'Port',
+              'default' => '5432'
             },
             'username' => {
               'required' => true,
-              'description' => 'Database Username'
+              'title' => 'Username'
             },
             'password' => {
               'required' => true,
-              'description' => 'Database Password'
+              'title' => 'Password'
             },
             'ssl-certificate' => {
               'description' => 'Client SSL Certificate'

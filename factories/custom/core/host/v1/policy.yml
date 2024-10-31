@@ -1,0 +1,6 @@
+- !host
+  id: {{ id }}
+  annotations:
+  {{# annotations }}
+    {{ key }}: {{ value }}
+  {{/ annotations }}

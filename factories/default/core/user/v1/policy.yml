@@ -5,9 +5,9 @@
   owner: !{{ owner_type }} {{ owner_role }}
   {{/ owner_type }}
 {{/ owner_role }}
-{{# ip_range) }}
+{{# ip_range }}
   restricted_to: {{ ip_range }}
-{{/ ip_range) }}
+{{/ ip_range }}
   annotations:
 {{# annotations }}
     {{ key }}: {{ value }}

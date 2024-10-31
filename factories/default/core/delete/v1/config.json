@@ -3,9 +3,9 @@
   "description": "Deletes a Role or Resource",
   "include_identifier": false,
   "include_annotations": false,
-  "wrap_with_policy": false,
   "policy_template_variables": {
     "resource_type": {
+      "title": "Resource Type",
       "required": true,
       "description": "The resource type to delete",
       "valid_values": [
@@ -19,6 +19,7 @@
       ]
     },
     "resource_id": {
+      "title": "Resource Identifier",
       "required": true,
       "description": "The resource identifier to delete"
     }

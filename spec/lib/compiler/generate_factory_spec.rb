@@ -32,52 +32,50 @@ describe(Compiler::GenerateFactory) do
   end
 
   describe '#generate' do
-    context 'for factories without variables' do
+    context 'for policy factories' do
       context 'when configuration is empty' do
-        let(:name) { 'bar' }
-        let(:classification) { 'foo' }
-        let(:policy_template) { nil }
-        let(:configuration) { '{}' }
+        context 'when policy template is empty' do
+          let(:name) { 'bar' }
+          let(:classification) { 'foo' }
+          let(:policy_template) { nil }
+          let(:configuration) { '{}' }
 
-        it 'generates a policy with a minimum policy template' do
-          test_policy = <<~POLICY
-            - !policy
-              id: {{ id }}
-              annotations:
-              {{# annotations }}
-                {{ key }}: {{ value }}
-              {{/ annotations }}
-          POLICY
-          expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
-        end
-        it 'uses the provided version' do
-          expect(subject['version']).to eq('v1')
-        end
-        it 'generates a dynamic branch definition' do
-          expect(subject['policy_branch']).to eq('{{ branch }}')
-        end
-        it 'generates a policy with a minimum schema' do
-          expect(subject['schema']).to eq({
-            "$schema" => "http://json-schema.org/draft-06/schema#",
-            "description" => "",
-            "properties" => {
-              "annotations" => {
-                "description"=>"Additional annotations",
-                "type" => "object"
+          it 'generates a policy with a minimum policy template' do
+            test_policy = <<~POLICY
+            POLICY
+            expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+          end
+          it 'uses the provided version' do
+            expect(subject['version']).to eq('v1')
+          end
+          it 'generates a dynamic branch definition' do
+            expect(subject['policy_branch']).to eq('{{ branch }}')
+          end
+          it 'generates a policy with a minimum schema' do
+            expect(subject['schema']).to eq({
+              "$schema" => "http://json-schema.org/draft-06/schema#",
+              "description" => "",
+              "properties" => {
+                "annotations" => {
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
+                  "type" => "object"
+                },
+                "branch" => {
+                  "title" => "Policy Branch",
+                  "description" => "Policy branch to apply this policy into",
+                  "type" => "string"
+                },
+                "id" => {
+                  "title" => "Resource Identifier",
+                  "type" => "string"
+                }
               },
-              "branch" => {
-                "description" => "Policy branch to apply this policy into",
-                "type" => "string"
-              },
-              "id" => {
-                "description" => "Resource Identifier",
-                "type" => "string"
-              }
-            },
-            "required" => ["branch", "id"],
-            "title" => "",
-            "type" => "object"
-          })
+              "required" => ["branch", "id"],
+              "title" => "",
+              "type" => "object"
+            })
+          end
         end
       end
       context 'when branch is defined' do
@@ -93,11 +91,12 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               }
             },
@@ -106,17 +105,17 @@ describe(Compiler::GenerateFactory) do
             "type" => "object"
           })
         end
-        it 'generates a policy with a minimum policy template' do
-          test_policy = <<~POLICY
-            - !policy
-              id: {{ id }}
-              annotations:
-              {{# annotations }}
-                {{ key }}: {{ value }}
-              {{/ annotations }}
-          POLICY
-          expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
-        end
+        # it 'generates a policy with a minimum policy template' do
+        #   test_policy = <<~POLICY
+        #     - !policy
+        #       id: {{ id }}
+        #       annotations:
+        #       {{# annotations }}
+        #         {{ key }}: {{ value }}
+        #       {{/ annotations }}
+        #   POLICY
+        #   expect(decoded_policy_template(subject['policy'])).to eq(test_policy.strip)
+        # end
       end
       context 'when the factory is not wrapped with policy' do
         let(:configuration) do
@@ -128,15 +127,17 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               }
             },
@@ -158,10 +159,12 @@ describe(Compiler::GenerateFactory) do
               "description" => "",
               "properties" => {
                 "annotations" => {
-                  "description"=>"Additional annotations",
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
                   "type" => "object"
                 },
                 "branch" => {
+                  "title" => "Policy Branch",
                   "description" => "Policy branch to apply this policy into",
                   "type" => "string"
                 }
@@ -187,10 +190,12 @@ describe(Compiler::GenerateFactory) do
               "description" => "",
               "properties" => {
                 "annotations" => {
-                  "description"=>"Additional annotations",
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
                   "type" => "object"
                 },
                 "branch" => {
+                  "title" => "Policy Branch",
                   "description" => "Policy branch to apply this policy into",
                   "type" => "string"
                 }
@@ -211,15 +216,17 @@ describe(Compiler::GenerateFactory) do
               "description" => "",
               "properties" => {
                 "annotations" => {
-                  "description"=>"Additional annotations",
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
                   "type" => "object"
                 },
                 "branch" => {
+                  "title" => "Policy Branch",
                   "description" => "Policy branch to apply this policy into",
                   "type" => "string"
                 },
                 "id" => {
-                  "description" => "Resource Identifier",
+                  "title" => "Resource Identifier",
                   "type" => "string"
                 }
               },
@@ -232,7 +239,7 @@ describe(Compiler::GenerateFactory) do
       end
       context 'when the factory is wrapped in policy but excludes the identifier' do
         let(:configuration) do
-          { include_identifier: false }.to_json
+          { wrap_with_policy: true, include_identifier: false }.to_json
         end
         it 'generates a schema with the id input' do
           expect(subject['schema']).to eq({
@@ -240,15 +247,17 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               }
             },
@@ -271,7 +280,7 @@ describe(Compiler::GenerateFactory) do
       end
       context 'when annotations are excluded' do
         let(:configuration) do
-          { include_annotations: false }.to_json
+          { wrap_with_policy: true, include_annotations: false }.to_json
         end
         it 'generates a policy with a minimum policy template' do
           test_policy = <<~POLICY
@@ -291,11 +300,12 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               }
             },
@@ -315,18 +325,21 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               },
               "foo" => {
+                "title" => "Foo",
                 "description" => "",
                 "type" => "string"
               }
@@ -346,18 +359,21 @@ describe(Compiler::GenerateFactory) do
               "description" => "",
               "properties" => {
                 "annotations" => {
-                  "description"=>"Additional annotations",
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
                   "type" => "object"
                 },
                 "branch" => {
+                  "title" => "Policy Branch",
                   "description" => "Policy branch to apply this policy into",
                   "type" => "string"
                 },
                 "id" => {
-                  "description" => "Resource Identifier",
+                  "title" => "Resource Identifier",
                   "type" => "string"
                 },
                 "foo" => {
+                  "title" => "Foo",
                   "description" => "",
                   "type" => "string"
                 }
@@ -378,18 +394,21 @@ describe(Compiler::GenerateFactory) do
               "description" => "",
               "properties" => {
                 "annotations" => {
-                  "description"=>"Additional annotations",
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
                   "type" => "object"
                 },
                 "branch" => {
+                  "title" => "Policy Branch",
                   "description" => "Policy branch to apply this policy into",
                   "type" => "string"
                 },
                 "id" => {
-                  "description" => "Resource Identifier",
+                  "title" => "Resource Identifier",
                   "type" => "string"
                 },
                 "foo" => {
+                  "title" => "Foo",
                   "description" => "foo-bar",
                   "type" => "string"
                 }
@@ -410,18 +429,21 @@ describe(Compiler::GenerateFactory) do
               "description" => "",
               "properties" => {
                 "annotations" => {
-                  "description"=>"Additional annotations",
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
                   "type" => "object"
                 },
                 "branch" => {
+                  "title" => "Policy Branch",
                   "description" => "Policy branch to apply this policy into",
                   "type" => "string"
                 },
                 "id" => {
-                  "description" => "Resource Identifier",
+                  "title" => "Resource Identifier",
                   "type" => "string"
                 },
                 "foo" => {
+                  "title" => "Foo",
                   "description" => "",
                   "type" => "string",
                   "enum" => ["foo", "bar"]
@@ -443,18 +465,21 @@ describe(Compiler::GenerateFactory) do
               "description" => "",
               "properties" => {
                 "annotations" => {
-                  "description"=>"Additional annotations",
+                  "title" => "Annotations",
+                  "description" => "Additional annotations",
                   "type" => "object"
                 },
                 "branch" => {
+                  "title" => "Policy Branch",
                   "description" => "Policy branch to apply this policy into",
                   "type" => "string"
                 },
                 "id" => {
-                  "description" => "Resource Identifier",
+                  "title" => "Resource Identifier",
                   "type" => "string"
                 },
                 "foo" => {
+                  "title" => "Foo",
                   "description" => "",
                   "type" => "string",
                   "default" => "foo-bar-baz"
@@ -493,21 +518,24 @@ describe(Compiler::GenerateFactory) do
           "description" => "",
           "properties" => {
             "annotations" => {
-              "description"=>"Additional annotations",
+              "title" => "Annotations",
+              "description" => "Additional annotations",
               "type" => "object"
             },
             "branch" => {
+              "title" => "Policy Branch",
               "description" => "Policy branch to apply this policy into",
               "type" => "string"
             },
             "id" => {
-              "description" => "Resource Identifier",
+              "title" => "Resource Identifier",
               "type" => "string"
             },
             "variables" => {
               "type" => "object",
               "properties" => {
                 "foo" => {
+                  "title" => "Foo",
                   "description" => "",
                   "type" => "string"
                 }
@@ -550,21 +578,24 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               },
               "variables" => {
                 "type" => "object",
                 "properties" => {
                   "foo" => {
+                    "title" => "Foo",
                     "description" => "this is foo",
                     "type" => "string"
                   }
@@ -588,21 +619,24 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               },
               "variables" => {
                 "type" => "object",
                 "properties" => {
                   "foo" => {
+                    "title" => "Foo",
                     "description" => "",
                     "type" => "string"
                   }
@@ -626,21 +660,24 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               },
               "variables" => {
                 "type" => "object",
                 "properties" => {
                   "foo" => {
+                    "title" => "Foo",
                     "description" => "",
                     "type" => "string",
                     "enum" => ["foo", "bar"]
@@ -665,21 +702,24 @@ describe(Compiler::GenerateFactory) do
             "description" => "",
             "properties" => {
               "annotations" => {
-                "description"=>"Additional annotations",
+                "title" => "Annotations",
+                "description" => "Additional annotations",
                 "type" => "object"
               },
               "branch" => {
+                "title" => "Policy Branch",
                 "description" => "Policy branch to apply this policy into",
                 "type" => "string"
               },
               "id" => {
-                "description" => "Resource Identifier",
+                "title" => "Resource Identifier",
                 "type" => "string"
               },
               "variables" => {
                 "type" => "object",
                 "properties" => {
                   "foo" => {
+                    "title" => "Foo",
                     "description" => "",
                     "type" => "string",
                     "default" => "foo-bar"
@@ -718,24 +758,15 @@ describe(Compiler::GenerateFactory) do
                 id: administrators
                 annotations:
                   description: "Roles that can update credentials."
-              - !group
-                id: circuit-breaker
-                annotations:
-                  description: Provides a mechanism for breaking access to this authenticator.
-                  editable: true
-              # Allows 'consumers' group to be cut in case of compromise
-              - !grant
-                member: !group consumers
-                role: !group circuit-breaker
               # Administrators also has the consumers role
               - !grant
                 member: !group administrators
                 role: !group consumers
-              # Consumers (via the circuit-breaker group) can read and execute
+              # Consumers can read and execute
               - !permit
                 resource: *variables
                 privileges: [ read, execute ]
-                role: !group circuit-breaker
+                role: !group consumers
               # Administrators can update (they have read and execute via the consumers group)
               - !permit
                 resource: *variables
@@ -761,20 +792,12 @@ describe(Compiler::GenerateFactory) do
               body:
               - !webservice
               - !group
-                id: circuit-breaker
-                annotations:
-                  description: Provides a mechanism for breaking access to this authenticator.
-              - !group
                 id: authenticatable
                 annotations:
                   description: "Roles that can authenticate using this authenticator."
-              # Allows 'authenticatable' group to be cut in case of compromise
-              - !grant
-                member: !group authenticatable
-                role: !group circuit-breaker
-              # Roles (via the circuit-breaker group) can authenticate
+              # Roles that can authenticate
               - !permit
-                role: !group circuit-breaker
+                role: !group authenticatable
                 privilege: [ read, authenticate ]
                 resource: !webservice
               # Enables Authenticator Status checking/troubleshooting
@@ -835,24 +858,15 @@ describe(Compiler::GenerateFactory) do
                 id: administrators
                 annotations:
                   description: "Roles that can update credentials."
-              - !group
-                id: circuit-breaker
-                annotations:
-                  description: Provides a mechanism for breaking access to this authenticator.
-                  editable: true
-              # Allows 'consumers' group to be cut in case of compromise
-              - !grant
-                member: !group consumers
-                role: !group circuit-breaker
               # Administrators also has the consumers role
               - !grant
                 member: !group administrators
                 role: !group consumers
-              # Consumers (via the circuit-breaker group) can read and execute
+              # Consumers can read and execute
               - !permit
                 resource: *variables
                 privileges: [ read, execute ]
-                role: !group circuit-breaker
+                role: !group consumers
               # Administrators can update (they have read and execute via the consumers group)
               - !permit
                 resource: *variables

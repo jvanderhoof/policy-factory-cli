@@ -36,7 +36,7 @@ describe('Factories::Default::Core::Delete') do
       expect(policy_template).to eq(
         <<~POLICY
           - !delete
-            record: !<%= resource_type %> <%= resource_id %>
+            record: !{{ resource_type }} {{ resource_id }}
         POLICY
       )
     end

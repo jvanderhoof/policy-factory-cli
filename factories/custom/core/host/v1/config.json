@@ -1,0 +1,5 @@
+{
+  "title": "Host",
+  "description": "Factory for creating a new host",
+  "include-annotations": true
+}

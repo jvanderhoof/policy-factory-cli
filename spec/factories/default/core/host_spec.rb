@@ -34,17 +34,19 @@ describe('Factories::Default::Core::Host') do
       expect(policy_template).to eq(
         <<~POLICY
           - !host
-            id: <%= id %>
-          <% if defined?(owner_role) && defined?(owner_type) -%>
-            owner: !<%= owner_type %> <%= owner_role %>
-          <% end -%>
-          <% if defined?(ip_range) -%>
-            restricted_to: <%= ip_range %>
-          <% end -%>
+            id: {{ id }}
+          {{# owner_role }}
+            {{# owner_type }}
+            owner: !{{ owner_type }} {{ owner_role }}
+            {{/ owner_type }}
+          {{/ owner_role }}
+          {{# ip_range }}
+            restricted_to: {{ ip_range }}
+          {{/ ip_range }}
             annotations:
-          <% annotations.each do |key, value| -%>
-              <%= key %>: <%= value %>
-          <% end -%>
+          {{# annotations }}
+              {{ key }}: {{ value }}
+          {{/ annotations }}
         POLICY
       )
     end
