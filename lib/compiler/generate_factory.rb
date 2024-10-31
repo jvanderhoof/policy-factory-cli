@@ -10,34 +10,42 @@ module Compiler
       @classification = classification
     end
 
-    def generate(policy_template:, configuration:)
-      configuration = dasherize_keys(configuration)
-      # If the configuration is a collection of factories, generate the collection
-      if configuration.key?('factories')
-        create_factory_collections(
-          factories: configuration['factories'],
-          schema: generate_schema(configuration: configuration)
-        )
-      else
-        configuration = merge_with_default_configuration(configuration)
-        if policy_template.nil? && configuration['policy-type'].present?
-          if File.exist?("lib/compiler/policy_types/#{configuration['policy-type'].underscore}.yml")
-            policy_template = File.read("lib/compiler/policy_types/#{configuration['policy-type'].underscore}.yml")
-          else
-            policy_template = ''
-          end
+    def build_configuration(configuration)
+      dashed_config = dasherize_keys(configuration)
+      rtn = {}.tap do |config|
+        dashed_config.each do |key, value|
+          config[key] = value
         end
-        schema = generate_schema(configuration: configuration)
-        factory_policy_template = generate_policy_template(
-          configuration: configuration,
-          policy_template: policy_template
-        )
-        create_factory(
-          schema: schema,
-          policy_template: factory_policy_template,
-          configuration: configuration
-        )
+        if dashed_config.key?('variables')
+          config['with-variables-group'] = true unless dashed_config['with-variables-group'] == false
+          config['wrap-with-policy'] = true
+        end
+
+        config['wrap-with-policy'] = true if dashed_config.key?('policy-type')
       end
+      merge_with_default_configuration(rtn)
+    end
+
+    def generate(policy_template:, configuration:)
+      configuration = build_configuration(configuration)
+      if policy_template.nil? && configuration['policy-type'].present?
+        if File.exist?("lib/compiler/policy_types/#{configuration['policy-type'].underscore}.yml")
+          policy_template = File.read("lib/compiler/policy_types/#{configuration['policy-type'].underscore}.yml")
+          configuration['wrap-with-policy'] = true
+        else
+          policy_template = ''
+        end
+      end
+      schema = generate_schema(configuration: configuration)
+      factory_policy_template = generate_policy_template(
+        configuration: configuration,
+        policy_template: policy_template
+      )
+      create_factory(
+        schema: schema,
+        policy_template: factory_policy_template,
+        configuration: configuration
+      )
     end
 
     private
@@ -58,23 +66,16 @@ module Compiler
     end
 
     def merge_with_default_configuration(configuration)
-      default_configuration.keys.each do |key|
-        configuration[key] = to_boolean(configuration[key])
-      end
       default_configuration.merge(configuration)
     end
 
     def default_configuration
       {
         'wrap-with-policy': false,
-        'include-identifier': false,
-        'include-annotations': false,
-        'with-variables-group': true
+        'include-identifier': true,
+        'include-annotations': true,
+        'with-variables-group': false
       }.stringify_keys
-    end
-
-    def to_boolean(str)
-      str.to_s.downcase != 'false'
     end
 
     def create_factory(schema:, policy_template:, configuration:)
@@ -83,16 +84,6 @@ module Compiler
           version: @version,
           policy: Base64.strict_encode64(policy_template.to_s),
           policy_branch: default_policy_branch(configuration),
-          schema: schema
-        }.to_json
-      )
-    end
-
-    def create_factory_collections(schema:, factories:)
-      Base64.strict_encode64(
-        {
-          version: @version,
-          factories: factories,
           schema: schema
         }.to_json
       )
@@ -107,7 +98,7 @@ module Compiler
     end
 
     def generate_policy_template(configuration:, policy_template:)
-      return policy_template if configuration['wrap-with-policy'].to_s.downcase == 'false'
+      return policy_template unless configuration['wrap-with-policy'].to_s.downcase == 'true'
 
       default_policy = [
         '- !policy',
@@ -149,14 +140,14 @@ module Compiler
     def generate_schema(configuration:)
       properties = {}.tap do |property_hsh|
         if configuration['wrap-with-policy'] && configuration['include-identifier']
-          property_hsh[:id] = { description: 'Resource Identifier', type: 'string' }
+          property_hsh[:id] = { title: 'Resource Identifier', type: 'string' }
         elsif configuration['wrap-with-policy']
-          property_hsh[:id] = { description: 'Resource Identifier', type: 'string' }
+          property_hsh[:id] = { title: 'Resource Identifier', type: 'string' }
         elsif configuration['include-identifier']
-          property_hsh[:id] = { description: 'Resource Identifier', type: 'string' }
+          property_hsh[:id] = { title: 'Resource Identifier', type: 'string' }
         end
         if configuration['include-annotations']
-          property_hsh[:annotations] = { description: 'Additional annotations', type: 'object' }
+          property_hsh[:annotations] = { title: 'Annotations', description: 'Additional annotations', type: 'object' }
         end
       end
       {
@@ -169,7 +160,7 @@ module Compiler
       }.tap do |schema|
         # If branch is not defined, require it in the payload
         if configuration['default-policy-branch'].to_s.empty?
-          schema[:properties][:branch] = { description: 'Policy branch to apply this policy into', type: 'string' }
+          schema[:properties][:branch] = { title: 'Policy Branch', description: 'Policy branch to apply this policy into', type: 'string' }
           schema[:required] << 'branch'
         end
         if configuration['wrap-with-policy'] && configuration['include-identifier']
@@ -182,7 +173,7 @@ module Compiler
 
         if configuration.key?('policy-template-variables')
           configuration['policy-template-variables'].each do |variable, values|
-            schema[:properties][variable] = { description: values['description'].to_s, type: 'string' }
+            schema[:properties][variable] = { title: (values['title'] || variable.capitalize).to_s, description: values['description'].to_s, type: 'string' }
             schema[:required] << variable if values['required'].to_s.downcase == 'true' && !schema[:required].include?(variable)
             if values['default'].present?
               schema[:properties][variable][:default] = values['default']
@@ -197,7 +188,7 @@ module Compiler
           schema[:required] << 'variables'
 
           configuration['variables'].each do |variable, values|
-            schema[:properties][:variables][:properties][variable] = { description: values['description'].to_s, type: 'string' }
+            schema[:properties][:variables][:properties][variable] = { title: (values['title'] || variable.capitalize).to_s, description: values['description'].to_s, type: 'string' }
             if values['default'].present?
               schema[:properties][:variables][:properties][variable][:default] = values['default']
             end
