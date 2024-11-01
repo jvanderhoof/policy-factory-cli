@@ -69,6 +69,7 @@ PLATFORMS
   x86_64-linux
 
 DEPENDENCIES
+  activesupport
   conjur-api
   pry
   rspec
