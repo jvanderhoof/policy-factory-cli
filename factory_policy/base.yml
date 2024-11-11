@@ -1,0 +1,5 @@
+- !policy
+  id: conjur
+  body:
+  - !policy
+    id: factories

@@ -4,141 +4,50 @@ require 'bundler'
 require 'base64'
 require 'json'
 require 'logger'
+require 'pry'
 
 Bundler.require
 
 require 'fileutils'
 require './lib/compiler/generate_factory'
+require './lib/compiler/utilities/hash_util'
+
+require './lib/cli/mindmap_builder'
+require './lib/cli/factory_template_creater'
+require './lib/cli/factory_loader'
 
 def logger
   @logger ||= begin
-    logger = Logger.new(STDOUT)
-    log_level = ENV.fetch('LOG_LEVEL', 'warn')
+    logger = Logger.new($stdout)
+    # log_level = ENV.fetch('LOG_LEVEL', 'warn')
     log_level = ENV.fetch('LOG_LEVEL', 'info')
     logger.level = Object.const_get("Logger::#{log_level.upcase}")
     logger
   end
 end
 
-def available_templates(files)
-  {}.tap do |templates|
-    files.each do |file|
-      classification, name, version = File.dirname(file).split('/')[-3..-1]
-      templates[classification]
-      templates[classification] ||= []
-      templates[classification] << "#{version}/#{name.underscore}"
-    end
-  end
-end
+namespace :tests do
+  task :build_test_mindmap do
+    puts 'Building test mindmap...'
+    puts ''
+    spec_path = 'spec/lib/compiler/generate_factory_spec.rb'
 
-def indent_line(spaces:, line:)
-  "#{' ' * spaces}#{line}\n"
-end
+    mindmap = CLI::MindmapBuilder.new.build(spec_path)
 
-def generate_policy_block(id:, indent:)
-  [].tap do |response|
-    response << indent_line(spaces: indent, line: '- !policy')
-    response << indent_line(spaces: indent + 2, line: "id: #{id}")
-    response << indent_line(spaces: indent + 2, line: 'body:')
-  end.join('')
-end
-
-# policy_path: conjur/factories
-# templates: { 'core' => ['v1/user', 'v1/group'] }
-def generate_base_policy(policy_path:, templates:)
-  indent = 0
-  [].tap do |response|
-    policy_path.split('/').each_with_index do |part, index|
-      indent = 2 * index
-      response << generate_policy_block(id: part, indent: indent)
-    end
-    indent += 2
-    templates.each do |template, factories|
-      response << generate_policy_block(id: template, indent: indent)
-      factories.each do |factory|
-        response << indent_line(spaces: indent + 2, line: "- !variable #{factory}")
+    File.open('spec/lib/compiler/overview.puml', 'w') do |output|
+      mindmap.split("\n").each do |input_line|
+        output.write("#{input_line}\n")
       end
     end
-  end.join
-end
-
-def api_key
-  return ENV['API_KEY'] if ENV['API_KEY'].present?
-
-  return Conjur::API.login(username, ENV['PASSWORD']).to_s if ENV.key?('PASSWORD')
-
-  raise "Conjur `#{username}` user must include either:\n\n  - An API key (via `API_KEY` environment variable)\n\n  - A password (via `PASSWORD` environment variable)"
-end
-
-def username
-  ENV.fetch('USERNAME', 'admin')
-end
-
-def client
-  @client ||= begin
-    conjur_url = ENV.fetch('CONJUR_URL', 'https://localhost')
-    run_as_secure = ENV.fetch('INSECURE', 'false') == 'false'
-
-    if run_as_secure && URI(conjur_url).scheme != 'https'
-      raise Exception.new('Conjur URL must be `https` unless the --insecure flag is present.')
-    end
-
-    Conjur.configuration.rest_client_options = {
-      verify_ssl: run_as_secure
-    }
-    Conjur.configuration.account = account
-    Conjur.configuration.appliance_url = conjur_url
-    if ENV['CONJUR_AUTH_TOKEN'].present?
-      Conjur::API.new_from_token(JSON.parse(Base64.decode64(ENV['CONJUR_AUTH_TOKEN'])))
-    else
-      Conjur::API.new_from_key(username, api_key)
-    end
   end
-end
-
-def account
-  ENV.fetch('ACCOUNT', 'cucumber')
-end
-
-def create_factory(classification:, version:, name:)
-  version = "v#{version.gsub(/\D/, '')}"
-  target_directory = "factories/custom/#{classification.underscore}/#{name.underscore}/#{version}"
-  FileUtils.mkdir_p(target_directory)
-
-  if File.exist?("#{target_directory}/policy.yml")
-    logger.debug("File already exists: '#{target_directory}/policy.yml'")
-  else
-    File.open("#{target_directory}/policy.yml", 'w') do |file|
-      file.write("# Place relevant Conjur Policy here.\n")
-    end
-  end
-
-  if File.exist?("#{target_directory}/config.json")
-    logger.debug("File already exists: '#{target_directory}/policy.yml'")
-  else
-    File.open("#{target_directory}/config.json", 'w') do |file|
-      file.write(
-        JSON.pretty_generate(
-          {
-            title: '',
-            description: '',
-            variables: {
-              'variable-1': { required: true, description: '' },
-              'variable-2': { description: '' }
-            }
-          }
-        )
-      )
-    end
-  end
-
-  logger.info("Factory stubs generated in: '#{target_directory}'")
 end
 
 namespace :policy_factory do
   task :create, [:classification, :version, :name] do |_, args|
-    create_factory(
-      classification: args[:classification],
+    CLI::FactoryTemplateCreator.new(
+      logger: logger
+    ).build(
+      category: args[:classification],
       version: args[:version],
       name: args[:name]
     )
@@ -146,96 +55,38 @@ namespace :policy_factory do
 
   task :inspect, [:path] do |_, args|
     factory_file_path = args[:path]
-    classification, name, version = args[:path].split('/').last(3)
-    compiled_factory = Compiler::GenerateFactory.new(
-        classification: classification,
-        version: version,
-        name: name
-      ).generate(
-        policy_template: File.exist?("#{factory_file_path}/policy.yml") ? File.read("#{factory_file_path}/policy.yml") : nil,
-        configuration: JSON.parse(File.read("#{factory_file_path}/config.json"))
-      )
-    factory = JSON.parse(Base64.decode64(compiled_factory))
+    factory = CLI::FactoryRunbookBuilder.new.build_factory(factory_file_path)
+
+    decompiled_factory = JSON.parse(Base64.decode64(factory.factory))
     puts 'Factory Schema:'
-    puts JSON.pretty_generate(factory)
-    if factory.key?('policy')
+    puts JSON.pretty_generate(decompiled_factory['schema'])
+    if decompiled_factory.key?('policy')
       puts
       puts 'Factory Policy:'
-      puts Base64.decode64(factory['policy'])
+      puts Base64.decode64(decompiled_factory['policy'])
     end
     puts
-    puts "Compiled Factory:"
-    puts compiled_factory
-  end
-
-  def apply_base_factory_policy(target_policy:, templates:)
-    logger.info("Generated Base Template:")
-    logger.debug(generate_base_policy(policy_path: target_policy, templates: templates))
-    client.load_policy('root',  generate_base_policy(policy_path: target_policy, templates: templates))
-  end
-
-  def load_factory(factory:, version:, classification:, template_folder:, target_policy:)
-    factory_file_path = "factories/#{template_folder}/#{classification}/#{factory}/#{version}"
-    logger.info("  loading template from: '#{factory_file_path}'")
-    policy_template = File.exist?("#{factory_file_path}/policy.yml") ? File.read("#{factory_file_path}/policy.yml") : nil
-
-    compiled_factory = Compiler::GenerateFactory.new(
-        name: factory,
-        version: version,
-        classification: classification
-      ).generate(
-        policy_template: policy_template,
-        configuration: JSON.parse(File.read("#{factory_file_path}/config.json"))
-      )
-    logger.debug("  compiled factory: '#{compiled_factory}'")
-    variable = "#{account}:variable:#{target_policy}/#{classification}/#{version}/#{factory}"
-    logger.info("  into variable: '#{variable}'")
-    client.resource(variable).add_value(compiled_factory)
+    puts 'Compiled Factory:'
+    puts factory.factory
   end
 
   task :load do
     target_policy = ENV.fetch('TARGET_POLICY', 'conjur/factories')
     if ENV.fetch('LOAD_ALL', 'false') == 'true'
       template_folder = ENV.fetch('TEMPLATE_FOLDER', 'default')
-      templates = available_templates(Dir["#{Dir.pwd}/factories/#{template_folder}/**/*.json"])
+      logger.info("loading all '#{template_folder}' factories")
 
-      if templates.empty?
-        logger.warn("It looks like there are no templates in 'factories/#{template_folder}'")
-        exit
-      end
-      logger.info("Loading templates from 'factories/#{template_folder}'")
-
-      apply_base_factory_policy(target_policy: target_policy, templates: templates)
-
-      templates.each do |classification, factories|
-        factories.each do |factory_version|
-          version, factory = factory_version.split('/')
-
-          load_factory(
-            factory: factory,
-            version: version,
-            classification: classification,
-            template_folder: template_folder,
-            target_policy: target_policy
-          )
-        end
-      end
+      templates = Dir["factories/#{template_folder}/**/*.json"]
+      template_folders = templates.map { |f| f.split('/')[0...-1].join('/') }
     else
       factory_path = ENV.fetch('FACTORY', '')
       logger.info("loading factory: #{factory_path}")
 
-      _, template_folder, classification, factory, version = factory_path.split('/')
-
-      template = { classification => ["#{version}/#{factory}"] }
-      apply_base_factory_policy(target_policy: target_policy, templates: template)
-
-      load_factory(
-        factory: factory,
-        version: version,
-        classification: classification,
-        template_folder: template_folder,
-        target_policy: target_policy
-      )
+      template_folders = [factory_path]
     end
+
+    CLI::FactoryLoader.new(logger: logger).load(
+      CLI::FactoryRunbookBuilder.new.build(template_folders, target_policy: target_policy)
+    )
   end
 end

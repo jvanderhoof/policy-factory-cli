@@ -1,0 +1,10 @@
+- !variable
+  id: {{ name }}
+  annotations:
+    factories/name: {{ name }}
+    factories/type: {{ type }}
+    factories/category: {{ category }}
+    factories/title: {{ title }}
+  {{# description }}
+    factories/description: {{ description }}
+  {{/ description }}

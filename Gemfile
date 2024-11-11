@@ -4,6 +4,7 @@ source 'https://rubygems.org'
 
 gem 'activesupport'
 gem 'conjur-api'
+gem 'mustache'
 
 group :development, :test do
   gem 'pry'

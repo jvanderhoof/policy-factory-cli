@@ -1,0 +1,5 @@
+- !policy
+  id: {{ category }}
+  annotations:
+    factories/title: {{ category }}
+    factories/description: Factories for creating {{ category }} related roles and resources
