@@ -15,9 +15,10 @@ describe('Factories::Default::Core::Variable') do
         {
           'title' => 'Variable',
           'description' => 'Creates a Conjur Variable',
-          'with_variable_group' => false,
+          'with_variables_group' => false,
           'variables' => {
             'value' => {
+              'title' => 'Value',
               'required' => true,
               'description' => 'Variable value'
             }

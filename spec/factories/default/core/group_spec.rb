@@ -15,12 +15,13 @@ describe('Factories::Default::Core::Group') do
         {
           'title' => 'Group Template',
           'description' => 'Creates a Conjur Group',
-          'wrap_with_policy' => false,
           'policy_template_variables' => {
             'owner_role' => {
+              'title' => 'Owner Role',
               'description' => 'The Conjur Role that will own this group'
             },
             'owner_type' => {
+              'title' => 'Owner Type',
               'description' => 'The resource type of the owner of this group'
             }
           }

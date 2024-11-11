@@ -15,12 +15,13 @@ describe('Factories::Default::Core::Layer') do
         {
           'title' => 'Layer Template',
           'description' => 'Creates a Conjur Layer',
-          'wrap_with_policy' => false,
           'policy_template_variables' => {
             'owner_role' => {
+              'title' => 'Owner Role',
               'description' => 'The Conjur Role that will own this Layer'
             },
             'owner_type' => {
+              'title' => 'Owner Type',
               'description' => 'The resource type of the owner of this Layer'
             }
           }

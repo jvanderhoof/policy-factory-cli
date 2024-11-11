@@ -17,24 +17,27 @@ describe('Factories::Default::Core::Grant') do
           'description' => 'Assigns a Role to another Role',
           'include_identifier' => false,
           'include_annotations' => false,
-          'wrap_with_policy' => false,
           'policy_template_variables' => {
             'member_resource_type' => {
+              'title' => 'Member Resource Type',
               'required' => true,
               'description' => 'The member type (group, host, user, or layer) for the grant',
               'valid_values' => ['group', 'host', 'layer', 'user']
             },
             'member_resource_id' => {
+              'title' => 'Member Resource Identifier',
               'required' => true,
               'description' => 'The member resource identifier for the grant'
             },
             'role_resource_type' => {
+              'title' => 'Role Resource Type',
               'required' => true,
               'description' => 'The role type (group or layer) for the grant',
               'valid_values' => ['group', 'layer'],
               'default' => 'group'
             },
             'role_resource_id' => {
+              'title' => 'Role Resource Identifier',
               'required' => true,
               'description' => 'The role resource identifier for the grant'
             }

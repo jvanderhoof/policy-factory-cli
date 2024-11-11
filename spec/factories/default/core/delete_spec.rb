@@ -17,15 +17,16 @@ describe('Factories::Default::Core::Delete') do
           'description' => 'Deletes a Role or Resource',
           'include_identifier' => false,
           'include_annotations' => false,
-          'wrap_with_policy' => false,
           'policy_template_variables' => {
             'resource_type' => {
               'required' => true,
+              "title" => "Resource Type",
               'description' => 'The resource type to delete',
               'valid_values' => ['group', 'host', 'layer', 'policy', 'user', 'variable', 'webservice']
             },
             'resource_id' => {
               'required' => true,
+              'title' => 'Resource Identifier',
               'description' => 'The resource identifier to delete'
             }
           }

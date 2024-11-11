@@ -17,27 +17,31 @@ describe('Factories::Default::Core::Permit') do
           'description' => 'Assigns permissions to a Role',
           'include_identifier' => false,
           'include_annotations' => false,
-          'wrap_with_policy' => false,
           'policy_template_variables' => {
             'role_type' => {
+              'title' => 'Role Type',
               'required' => true,
               'description' => 'The role type to grant permission on a resource',
               'valid_values' => ['group', 'host', 'layer', 'policy', 'user']
             },
             'role_id' => {
+              'title' => 'Role Identifier',
               'required' => true,
               'description' => 'The role identifier to grant permission on a resource'
             },
             'resource_type' => {
+              'title' => 'Resource Type',
               'required' => true,
               'description' => 'The resource type to grant the permission on',
               'valid_values' => ['group', 'host', 'layer', 'policy', 'user', 'variable']
             },
             'resource_id' => {
+              'title' => 'Resource Identifier',
               'required' => true,
               'description' => 'The resource identifier to grant the permission on'
             },
             'privileges' => {
+              'title' => 'Privileges',
               'required' => true,
               'description' => 'Comma seperated list of privileges to grant on the resource'
             }

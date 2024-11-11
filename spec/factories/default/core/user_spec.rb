@@ -15,15 +15,17 @@ describe('Factories::Default::Core::User') do
         {
           'title' => 'User Template',
           'description' => 'Creates a Conjur User',
-          'wrap_with_policy' => false,
           'policy_template_variables' => {
             'owner_role' => {
+              'title' => 'Owner Role',
               'description' => 'The Conjur Role that will own this user'
             },
             'owner_type' => {
+              'title' => 'Owner Type',
               'description' => 'The resource type of the owner of this user'
             },
             'ip_range' => {
+              'title' => 'IP Range',
               'description' => 'Limits the network range the user is allowed to authenticate from'
             }
           }

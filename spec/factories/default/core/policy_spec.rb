@@ -15,12 +15,13 @@ describe('Factories::Default::Core::Policy') do
         {
           'title' => 'Policy Template',
           'description' => 'Creates a Conjur Policy',
-          'wrap_with_policy' => false,
           'policy_template_variables' => {
             'owner_role' => {
+              'title' => 'Owner Role',
               'description' => 'The Conjur Role that will own this policy'
             },
             'owner_type' => {
+              'title' => 'Owner Type',
               'description' => 'The resource type of the owner of this policy'
             }
           }

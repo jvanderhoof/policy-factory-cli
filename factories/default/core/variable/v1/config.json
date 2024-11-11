@@ -1,7 +1,7 @@
 {
   "title": "Variable",
   "description": "Creates a Conjur Variable",
-  "with_variable_group": false,
+  "with_variables_group": false,
   "variables": {
     "value": {
       "title": "Value",
