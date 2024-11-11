@@ -15,6 +15,7 @@ require './lib/compiler/utilities/hash_util'
 require './lib/cli/mindmap_builder'
 require './lib/cli/factory_template_creater'
 require './lib/cli/factory_loader'
+require './lib/cli/factory_runbook_builder'
 
 def logger
   @logger ||= begin

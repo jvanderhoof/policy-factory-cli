@@ -90,7 +90,7 @@ Factory Schema:
         "type": "object"
       },
       "branch": {
-        "description": "Policy branch to apply this policy into",
+        "description": "Policy branch to apply this policy to",
         "type": "string"
       },
       "owner_role": {
