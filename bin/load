@@ -15,6 +15,8 @@ Usage: bin/load [options] <path-to-factory>:
 
     --all <default or custom>   Loads all default or custom factories
 
+    --category <category>       Loads all factories in the specified category
+
     --insecure                  Connects to Conjur using an insecure connection (does not check
                                 for TLS and valid CA certificate)
 
@@ -42,6 +44,7 @@ run() {
     --env TEMPLATE_FOLDER=$TEMPLATE_FOLDER \
     --env TARGET_POLICY=$TARGET_POLICY \
     --env LOAD_ALL=$LOAD_ALL \
+    --env LOAD_FACTORY_CATEGORY=$LOAD_FACTORY_CATEGORY \
     --env FACTORY=$FACTORY \
     --env INSECURE=$INSECURE \
     --rm \
@@ -91,11 +94,13 @@ TEMPLATE_FOLDER="custom"
 LOAD_ALL="false"
 INSECURE="false"
 FACTORY=""
+LOAD_FACTORY_CATEGORY=""
 
 while true ; do
   case "$1" in
     -h | --help ) print_help ;;
     --all ) shift ; TEMPLATE_FOLDER=$1; LOAD_ALL="true" ; shift ;;
+    --category ) shift ; LOAD_FACTORY_CATEGORY=$1 ; shift ;;
     --insecure ) INSECURE="true" ; shift ;;
     * ) FACTORY="$1" ; break ;;
   esac

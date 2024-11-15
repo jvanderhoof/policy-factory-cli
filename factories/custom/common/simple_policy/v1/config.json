@@ -1,0 +1,6 @@
+{
+  "title": "Simple Policy Template",
+  "description": "Creates a basic Conjur Policy",
+  "include_annotations": true,
+  "include_identifier": true
+}

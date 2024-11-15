@@ -1,0 +1,17 @@
+{
+  "title": "Enable Workload Safe Access",
+  "description": "Grants a workload permission to retrieve secrets from a provided Safe",
+  "include_identifier": true,
+  "include_annotations": false,
+  "policy_template_variables": {
+    "id": {
+      "title": "Workload Identifier",
+      "description": "The unique identifier for the workload"
+    },
+    "safe": {
+      "title": "Safe",
+      "description": "The Safe identifier this workload should gain access to",
+      "required": true
+    }
+  }
+}

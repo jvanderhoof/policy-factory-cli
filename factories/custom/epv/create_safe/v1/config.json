@@ -1,0 +1,13 @@
+{
+  "title": "Create Safe",
+  "description": "Creates a policy which acts as a safe for storing secrets.",
+  "wrap_with_policy": false,
+  "default_policy_branch": "/data/safes",
+  "policy_template_variables": {
+    "id": {
+      "title": "Safe Identifier",
+      "description": "The identifier for the Safe. This must be unique"
+    }
+  }
+
+}

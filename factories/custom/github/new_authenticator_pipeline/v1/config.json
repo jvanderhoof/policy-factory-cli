@@ -1,0 +1,30 @@
+{
+  "title": "New Github Authenticator",
+  "description": "Adds a new Github authenticator and corresponding policy",
+  "factories": [
+    {
+      "factory": "github/authenticator/v1"
+    },
+    {
+      "factory": "common/simple_policy/v1",
+      "args": {
+        "branch": "/workloads",
+        "id": "github"
+      }
+    },
+    {
+      "factory": "common/authenticator_policy/v1",
+      "args": {
+        "branch": "/workloads/github",
+        "id": "{{ id }}"
+      }
+    },
+    {
+      "factory": "common/enable_authentication/v1",
+      "args": {
+        "branch": "conjur/authn-jwt/{{ id }}",
+        "id": "/workloads/github/{{ id }}/authenticatable"
+      }
+    }
+  ]
+}

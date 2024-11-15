@@ -7,6 +7,7 @@ require './lib/compiler/configuration/factory_variable'
 require './lib/compiler/configuration/factory_configuration'
 
 module Compiler
+  # Generates a factory from a policy template and configuration
   class GenerateFactory
     def initialize(name:, version:, category:)
       @name = name
@@ -84,11 +85,11 @@ module Compiler
           if configuration.with_variables_group
             policy.push("#{print_indent(indent)}- &variables")
             indent += 1
-            policy.concat(configuration.variables.map { |variable, _| "#{print_indent(indent)}- !variable #{variable.identifier}" })
+            policy.concat(configuration.variables.map { |variable, _| "#{print_indent(indent)}- !variable #{variable.identifier.dasherize}" })
             policy.push('')
             indent -= 1
           else
-            policy.concat(configuration.variables.map { |variable, _| "#{print_indent(indent)}- !variable #{variable.identifier}" })
+            policy.concat(configuration.variables.map { |variable, _| "#{print_indent(indent)}- !variable #{variable.identifier.dasherize}" })
           end
         end
         policy.concat(configuration.factory_template.split("\n").map { |line| "#{print_indent(indent)}#{line}" })

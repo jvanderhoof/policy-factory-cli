@@ -1,0 +1,6 @@
+{
+  "title": "Delete Safe",
+  "description": "Removes the provided policy (and nested roles/resources) for a Safe.",
+  "default_policy_branch": "/data/safes",
+  "include_annotations": false
+}

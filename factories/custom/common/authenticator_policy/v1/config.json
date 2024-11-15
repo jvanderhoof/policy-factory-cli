@@ -1,0 +1,12 @@
+{
+  "title": "Authenticator Host Policy",
+  "description": "Generates a Policy for Authenticator Hosts",
+  "include_identifier": true,
+  "include_annotations": false,
+  "policy_template_variables": {
+    "branch": {
+      "title": "Target Policy",
+      "description": "The policy branch to apply this policy into"
+    }
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "title": "Authenticator Workload Setup",
+  "description": "Creates the initial policy for loading authenticators and authenticator workloads.",
+  "factories": [
+    { "factory": "setup/authenticators/v1" },
+    { "factory": "setup/authenticator_workloads/v1" },
+    { "factory": "setup/epv/v1" }
+  ]
+}

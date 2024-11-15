@@ -14,7 +14,7 @@ describe('Factories::Default::Connections::Database') do
           'description' => 'All information for connecting to a database',
           'policy_type' => 'variable-set',
           'variables' => {
-            'datatbase-type' => {
+            'database-type' => {
               'required' => true,
               'description' => 'The type of database this connection is',
               'title' => 'Type',

@@ -10,6 +10,7 @@ Bundler.require
 
 require 'fileutils'
 require './lib/compiler/generate_factory'
+require './lib/compiler/generate_factory_pipeline'
 require './lib/compiler/utilities/hash_util'
 
 require './lib/cli/mindmap_builder'
@@ -79,6 +80,13 @@ namespace :policy_factory do
 
       templates = Dir["factories/#{template_folder}/**/*.json"]
       template_folders = templates.map { |f| f.split('/')[0...-1].join('/') }
+    elsif ENV.fetch('LOAD_FACTORY_CATEGORY', '').present?
+
+      template_folder = ENV['LOAD_FACTORY_CATEGORY']
+      logger.info("loading factories from category: '#{template_folder}")
+
+      templates = Dir["factories/#{template_folder}/**/*.json"]
+      template_folders = templates.map { |f| f.split('/')[0...-1].join('/') }
     else
       factory_path = ENV.fetch('FACTORY', '')
       logger.info("loading factory: #{factory_path}")
@@ -86,6 +94,7 @@ namespace :policy_factory do
       template_folders = [factory_path]
     end
 
+    puts template_folders.inspect
     CLI::FactoryLoader.new(logger: logger).load(
       CLI::FactoryRunbookBuilder.new.build(template_folders, target_policy: target_policy)
     )

@@ -1,0 +1,4 @@
+- !policy
+  id: {{ id }}
+  body:
+  - !group authenticatable

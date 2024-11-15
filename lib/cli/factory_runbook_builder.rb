@@ -66,11 +66,18 @@ module CLI
         name: name,
         version: version,
         category: category,
-        type: 'Variable Factory',
+        type: calculate_type(schema),
         title: schema['title'],
         description: schema['description'],
         factory: compiled_factory
       )
+    end
+
+    def calculate_type(schema)
+      return 'Variable Factory' if schema.dig('properties', 'variables')
+      return 'Factory Pipeline' if schema.key?('factories')
+
+      'Policy Factory'
     end
 
     def load_factory_configuration(factory_path)
@@ -82,14 +89,25 @@ module CLI
     end
 
     def build_compiled_factory(factory_path:, name:, version:, category:)
-      Compiler::GenerateFactory.new(
-        name: name,
-        version: version,
-        category: category
-      ).generate(
-        policy_template: File.exist?("#{factory_path}/policy.yml") ? File.read("#{factory_path}/policy.yml") : nil,
-        configuration: load_factory_configuration(factory_path)
-      )
+      config = load_factory_configuration(factory_path)
+      if config.key?(:factories)
+        Compiler::GenerateFactoryPipeline.new(
+          name: name,
+          version: version,
+          category: category
+        ).generate(
+          configuration: config
+        )
+      else
+        Compiler::GenerateFactory.new(
+          name: name,
+          version: version,
+          category: category
+        ).generate(
+          policy_template: File.exist?("#{factory_path}/policy.yml") ? File.read("#{factory_path}/policy.yml") : nil,
+          configuration: load_factory_configuration(factory_path)
+        )
+      end
     end
   end
 end

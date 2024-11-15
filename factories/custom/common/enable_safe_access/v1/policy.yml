@@ -1,0 +1,3 @@
+- !grant
+  member: !host {{ id }}
+  role: !group consumers

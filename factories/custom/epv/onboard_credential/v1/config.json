@@ -1,0 +1,17 @@
+{
+  "title": "Onboard a Credential",
+  "description": "This interface handles onboarding credentials into a Safe",
+  "include_identifier": false,
+  "policy_template_variables": {
+    "safe_identifier": {
+      "title": "Safe Identifier",
+      "description": "The identifier for the Safe. This does not include the Safe's path",
+      "required": true
+    },
+    "credential_identifier": {
+      "title": "Credential Identifier",
+      "description": "The identifier of the credential being added to the Safe",
+      "required": true
+    }
+  }
+}

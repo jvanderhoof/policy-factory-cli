@@ -1,0 +1,28 @@
+{
+  "title": "Add Github Workload",
+  "description": "Adds a Github Workload",
+  "default_policy_branch": "workloads/github/{{ authenticator_identifier }}",
+  "include_identifier": true,
+  "include_annotations": true,
+  "policy_template_variables": {
+    "id": {
+      "title": "Workload Identifier",
+      "description": "The unique identifier for the workload"
+    },
+    "repository": {
+      "title": "Github Repository name",
+      "description": "The repository name without the Github organization"
+    },
+    "authenticator_identifier": {
+      "title": "Github Authenticator",
+      "description": "The name of the Github authenticator this workload should use",
+      "default": "github",
+      "required": true
+    },
+    "workflow": {
+      "title": "Workflow",
+      "description": "The Github workflow to bind this workload to",
+      "required": true
+    }
+  }
+}

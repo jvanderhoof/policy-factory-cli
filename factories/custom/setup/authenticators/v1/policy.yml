@@ -1,0 +1,25 @@
+- !policy
+  id: workloads
+
+- !policy
+  id: conjur
+  body:
+  - !group authenticator-admins
+  - !policy
+    id: authn-iam
+    owner: !group /conjur/authenticator-admins
+  - !policy
+    id: authn-k8s
+    owner: !group /conjur/authenticator-admins
+  - !policy
+    id: authn-azure
+    owner: !group /conjur/authenticator-admins
+  - !policy
+    id: authn-jwt
+    owner: !group /conjur/authenticator-admins
+  - !policy
+    id: authn-gcp
+    owner: !group /conjur/authenticator-admins
+  - !policy
+    id: authn-oidc
+    owner: !group /conjur/authenticator-admins

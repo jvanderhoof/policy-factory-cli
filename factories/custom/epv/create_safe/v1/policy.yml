@@ -1,0 +1,15 @@
+- !group {{ id }}-safe-admins
+
+- !policy
+  id: {{ id }}
+  owner: !group {{ id }}-safe-admins
+  annotations:
+  {{# annotations }}
+    {{ key }}: {{ value }}
+  {{/ annotations }}
+  body:
+  - !policy
+    id: delegation
+    body:
+    - !group consumers
+    - !group viewers

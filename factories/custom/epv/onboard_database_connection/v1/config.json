@@ -1,0 +1,18 @@
+{
+  "title": "Add Database Connection",
+  "description": "Adds a database connection to a Safe",
+  "factories": [
+    {
+      "factory": "connections/database/v1",
+      "args": {
+        "branch": "/data/safes/{{ safe_identifier }}"
+      }
+    },{
+      "factory": "epv/onboard_credential/v1",
+      "args": {
+        "branch": "/data/safes/{{ safe_identifier }}",
+        "credential_identifier": "{{ id }}"
+      }
+    }
+  ]
+}

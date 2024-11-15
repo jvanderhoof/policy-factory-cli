@@ -1,0 +1,7 @@
+{
+  "title": "EPV Safe Setup",
+  "description": "Creates the initial policy for Creating Safes.",
+  "include_annotations": false,
+  "include_identifier": false,
+  "default_policy_branch": "root"
+}

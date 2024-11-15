@@ -1,0 +1,7 @@
+{
+  "title": "Authenticator Setup",
+  "description": "Creates the initial policy for loading authenticators.",
+  "include_annotations": false,
+  "include_identifier": false,
+  "default_policy_branch": "root"
+}

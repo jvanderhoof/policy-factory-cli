@@ -1,0 +1,13 @@
+- !host
+  id: {{ id }}
+  annotations:
+  {{# annotations }}
+    {{ key }}: {{ value }}
+  {{/ annotations }}
+    authn-jwt/{{ authenticator_identifier }}/sub: repo:my-company/{{ repository }}:environment:prod
+    authn-jwt/{{ authenticator_identifier }}/workflow: {{ workflow }}
+    authn-jwt/{{ authenticator_identifier }}/aud: https://github.com/org
+
+- !grant
+  member: !host {{ id }}
+  role: !group authenticatable

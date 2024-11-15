@@ -1,0 +1,3 @@
+- !grant
+  member: !group delegation/consumers
+  role: !group {{ credential_identifier }}/consumers

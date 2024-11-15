@@ -1,0 +1,19 @@
+{
+  "title": "Adds a Github Workload with access to a Safe",
+  "description": "Adds a Github Workload to the Github Authenticator and allows Safe access",
+  "factories": [
+    {
+      "factory": "github/onboard_workload/v1",
+      "args": {
+        "branch": "workloads/github/{{ authenticator_identifier }}"
+      }
+    },
+    {
+      "factory": "common/enable_safe_access/v1",
+      "args": {
+        "branch": "data/safes/{{ safe }}/delegation",
+        "id": "/workloads/github/{{ authenticator_identifier }}/{{ id }}"
+      }
+    }
+  ]
+}

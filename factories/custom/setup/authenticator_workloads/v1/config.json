@@ -1,0 +1,7 @@
+{
+  "title": "Workload Setup",
+  "description": "Creates the initial policy for authenticator workloads.",
+  "include_annotations": false,
+  "include_identifier": false,
+  "default_policy_branch": "root"
+}

@@ -1,0 +1,3 @@
+- !grant
+  member: !group {{ id }}
+  role: !group authenticatable

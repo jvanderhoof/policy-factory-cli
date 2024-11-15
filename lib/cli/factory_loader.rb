@@ -13,11 +13,13 @@ module CLI
     end
 
     def load(factories)
-      factories[:policies].each do |policy|
-        @logger.info("Loading policy into '#{policy[:branch]}'")
+      factories[:policies].each do |item|
+        @logger.info("Loading policy into '#{item[:branch]}'")
+        @logger.info("loading: ")
+        item[:policy].split("\n").each { |line| @logger.info(line) }
         client.load_policy(
-          policy[:branch] == '/' ? 'root' : policy[:branch],
-          policy[:policy]
+          item[:branch] == '/' ? 'root' : item[:branch],
+          item[:policy]
         )
       end
       factories[:factories].each do |factory|

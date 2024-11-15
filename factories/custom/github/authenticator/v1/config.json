@@ -1,0 +1,40 @@
+{
+  "title": "Github Authenticator",
+  "description": "Enable support for Github",
+  "default_policy_branch": "conjur/authn-jwt",
+  "policy_type": "authenticator",
+  "policy_template_variables": {
+    "id": {
+      "title": "Identifier",
+      "description": "Name of the Github authenticator",
+      "default": "github",
+      "required": true
+    }
+  },
+  "variables": {
+    "jwks-uri": {
+      "hidden": true,
+      "default": "https://token.actions.githubusercontent.com/.well-known/jwks"
+    },
+    "token-app-property": {
+      "hidden": true,
+      "default": "workflow"
+    },
+    "identity-path": {
+      "hidden": true,
+      "default": "workloads/github/{{ id }}"
+    },
+    "issuer": {
+      "hidden": true,
+      "default": "https://token.actions.githubusercontent.com"
+    },
+    "enforced-claims": {
+      "hidden": true,
+      "default": "workflow, repository"
+    },
+    "audience": {
+      "hidden": true,
+      "default": "https://github.com/org"
+    }
+  }
+}
